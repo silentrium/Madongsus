@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Madongsus Disguise</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Madongsus Logo</h1>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="#">Contact</a>
+        <a href="setting.html">Setting</a>
+    </nav>
+
+    <!-- BOX NGỤY TRANG CHÍNH -->
+    <div class="disguise-box">
+        <div class="player-controls">
+            <button class="btn-play" id="mainPlayBtn">▶</button>
+            <button class="btn-replay" id="replayBtn">↺</button>
+            <input type="range" style="width: 100px;">
+        </div>
+        <div class="text-1-bar" id="dispText1">Text 1 (Current Song)</div>
+        <div class="text-2-body" id="dispText2">Text 2 (Description)</div>
+        
+        <div class="box-footer">
+            <button id="playlistBtn">Playlist ▾</button>
+            <div id="playlistDropdown" style="display:none; margin-top:5px;">
+                <select id="selectPlaylist">
+                    <option value="1">Playlist 1</option>
+                    <option value="2">Playlist 2</option>
+                    <option value="3">Playlist 3</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- MỞ RỘNG PLAYLIST THƯỜNG -->
+    <div id="playlistExpand" class="playlist-scroll" style="display:none; width:320px;">
+        <ul id="songListDisplay" style="list-style:none; padding:0;"></ul>
+    </div>
+
+    <!-- SECRET BOX: QUICK LISTEN -->
+    <div id="quickListenModal" class="secret-modal">
+        <h3>Quick Listen (Secret)</h3>
+        <input type="text" id="sgUrl" placeholder="Soundgasm Link" style="width:95%; margin-bottom:5px;"><br>
+        <input type="text" id="fakeTitle" placeholder="Fake Title" style="width:95%; margin-bottom:5px;"><br>
+        <input type="text" id="fakeDesc" placeholder="Fake Description" style="width:95%; margin-bottom:5px;"><br>
+        <button onclick="applyQuickListen()">Run</button>
+        <button onclick="document.getElementById('quickListenModal').style.display='none'">Close</button>
+    </div>
+
+    <!-- SECRET BOX: SECRET PLAYLIST -->
+    <div id="secretPlaylistModal" class="secret-modal">
+        <h3>Secret Playlist Selected</h3>
+        <div class="playlist-scroll">
+            <ul id="secretSongList" style="list-style:none; padding:0;"></ul>
+        </div>
+        <button onclick="document.getElementById('secretPlaylistModal').style.display='none'">Close</button>
+    </div>
+
+    <div id="toast" class="notification-toast">Applied!</div>
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        // Địa chỉ Backend Python (Nếu chạy local là http://127.0.0.1:5000, khi lên host đổi thành link host của bạn)
+        const BACKEND_URL = "http://127.0.0.1:5000";
+
+        let replayClicks = 0, replayTimer;
+        let playClicks = 0, playTimer;
+        let dropdownClicks = 0, dropdownTimer;
+        let quickAudioLink = null;
+
+        const audio = document.getElementById('audioPlayer');
+
+        // 1. Triple click Replay -> Mở Quick Listen
+        document.getElementById('replayBtn').addEventListener('click', () => {
+            replayClicks++;
+            clearTimeout(replayTimer);
+            if (replayClicks === 3) {
+                document.getElementById('quickListenModal').style.display = 'block';
+                replayClicks = 0;
+            }
+            replayTimer = setTimeout(() => replayClicks = 0, 800);
+        });
+
+        // 2. Chạy Quick Listen gọi Python Backend
+        async function applyQuickListen() {
+            const url = document.getElementById('sgUrl').value;
+            try {
+                const res = await fetch(`${BACKEND_URL}/extract`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url: url})
+                });
+                const data = await res.json();
+                if (data.success) {
+                    quickAudioLink = data.m4a_link;
+                    document.getElementById('dispText1').innerText = document.getElementById('fakeTitle').value || "Default Title";
+                    document.getElementById('dispText2').innerText = document.getElementById('fakeDesc').value || "Default Desc";
+                    document.getElementById('quickListenModal').style.display = 'none';
+                    
+                    const toast = document.getElementById('toast');
+                    toast.style.display = 'block';
+                    setTimeout(() => toast.style.display = 'none', 1000);
+                } else {
+                    alert("Lỗi: " + data.error);
+                }
+            } catch (err) {
+                alert("Không kết nối được với Python Server tại gốc!");
+            }
+        }
+
+        // 3. Triple click Play -> Phát Soundgasm Audio
+        document.getElementById('mainPlayBtn').addEventListener('click', () => {
+            playClicks++;
+            clearTimeout(playTimer);
+            if (playClicks === 3) {
+                if (quickAudioLink) {
+                    audio.src = quickAudioLink;
+                    audio.play();
+                } else {
+                    alert("Chưa cài đặt Quick Listen Audio!");
+                }
+                playClicks = 0;
+            } else {
+                playTimer = setTimeout(() => {
+                    if (playClicks === 1) {
+                        if (audio.paused) audio.play(); else audio.pause();
+                    }
+                    playClicks = 0;
+                }, 400);
+            }
+        });
+
+        // 4. Triple click Dropdown Button -> Mở Secret Playlist
+        document.getElementById('playlistBtn').addEventListener('click', () => {
+            dropdownClicks++;
+            clearTimeout(dropdownTimer);
+            if (dropdownClicks === 3) {
+                document.getElementById('secretPlaylistModal').style.display = 'block';
+                loadSecretPlaylistUI();
+                dropdownClicks = 0;
+            } else {
+                dropdownTimer = setTimeout(() => {
+                    if (dropdownClicks === 1) {
+                        const dp = document.getElementById('playlistDropdown');
+                        dp.style.display = dp.style.display === 'none' ? 'block' : 'none';
+                    }
+                    dropdownClicks = 0;
+                }, 400);
+            }
+        });
+
+        function loadSecretPlaylistUI() {
+            const secretList = JSON.parse(localStorage.getItem('secretPlaylist') || '[]');
+            const ul = document.getElementById('secretSongList');
+            ul.innerHTML = secretList.map(s => `<li style="cursor:pointer; padding:3px 0;" onclick="playAudio('${s.link}', '${s.title}')">🎵 ${s.title}</li>`).join('');
+        }
+
+        function playAudio(link, title) {
+            audio.src = link;
+            audio.play();
+            document.getElementById('dispText1').innerText = title;
+        }
+    </script>
+</body>
+</html>

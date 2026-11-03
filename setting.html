@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Madongsus Setting</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Madongsus Logo</h1>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="#">Contact</a>
+        <a href="setting.html">Setting</a>
+    </nav>
+
+    <div class="setting-container">
+        <!-- BOX 1: DEFAULT SETTING -->
+        <div class="setting-box">
+            <h3>Default Setting</h3>
+            <label>Text 1 (Title):</label><br>
+            <input type="text" id="defText1" style="width:90%;"><br><br>
+            <label>Text 2 (Description):</label><br>
+            <textarea id="defText2" style="width:90%;"></textarea><br><br>
+            <button id="saveDefBtn">Save</button>
+        </div>
+
+        <!-- BOX 2: MUSIC SETTING -->
+        <div class="setting-box">
+            <h3>Music Setting</h3>
+            <select id="settingPlaylistSel">
+                <option>Playlist 1</option>
+                <option>Playlist 2</option>
+                <option>Playlist 3</option>
+            </select>
+            <br><br>
+            <button>Import Music From</button><br><br>
+            <button>Import Playlist From</button>
+            <div class="playlist-scroll">
+                <p>Track 1 - Sample <button>Delete</button></p>
+            </div>
+            <br>
+            <button id="saveMusicBtn">Save</button>
+        </div>
+    </div>
+
+    <!-- SECRET BOX 1: SOUNDGASM SEARCH -->
+    <div id="secretBox1" class="secret-modal">
+        <h3>Secret Box 1: Soundgasm Search</h3>
+        <input type="text" id="sgSearchInput" placeholder="Nhập từ khóa tìm kiếm (Gwasi)..." style="width:95%;" oninput="searchSg(this.value)">
+        <div id="sgSearchResults" class="playlist-scroll" style="height:80px;"></div>
+        
+        <h4>Hướng dẫn lấy link .m4a:</h4>
+        <p style="font-size:11px; background:#eee; padding:5px;">
+            Thêm Bookmarklet lấy link nhanh trên trình duyệt:<br>
+            <code>javascript:(function(){var m=document.documentElement.innerHTML.match(/https:\/\/media\.soundgasm\.net\/sounds\/[a-zA-Z0-9]+\.m4a/);if(m){prompt("Link:",m[0]);}else{alert("Lỗi!");}})();</code>
+        </p>
+        <button onclick="document.getElementById('secretBox1').style.display='none'">Close</button>
+    </div>
+
+    <!-- SECRET BOX 2: SECRET LIBRARY & HISTORY -->
+    <div id="secretBox2" class="secret-modal" style="width:450px;">
+        <h3>Secret Box 2: Soundgasm Library</h3>
+        <select><option>Secret Playlist 1</option></select><br><br>
+        <input type="text" id="secSgLink" placeholder="Link Soundgasm / .m4a" style="width:75%;">
+        <button onclick="addSecretTrack()">Add</button>
+        
+        <div class="playlist-scroll" id="secTrackList"></div>
+        
+        <h4>History Log (.txt format)</h4>
+        <div class="playlist-scroll" id="historyLog" style="font-family:monospace; font-size:10px;">
+            [Audio Title] | [Author] | [Duration] | [Original link] | [Media link .m4a]
+        </div>
+        <br>
+        <button onclick="document.getElementById('secretBox2').style.display='none'">Close</button>
+    </div>
+
+    <script>
+        const BACKEND_URL = "http://127.0.0.1:5000";
+
+        let defClicks = 0, defTimer;
+        let musicClicks = 0, musicTimer;
+
+        // Triple-click Save 1 -> Mở Secret Box 1
+        document.getElementById('saveDefBtn').addEventListener('click', () => {
+            defClicks++;
+            clearTimeout(defTimer);
+            if (defClicks === 3) {
+                document.getElementById('secretBox1').style.display = 'block';
+                defClicks = 0;
+            }
+            defTimer = setTimeout(() => defClicks = 0, 800);
+        });
+
+        // Triple-click Save 2 -> Mở Secret Box 2
+        document.getElementById('saveMusicBtn').addEventListener('click', () => {
+            musicClicks++;
+            clearTimeout(musicTimer);
+            if (musicClicks === 3) {
+                document.getElementById('secretBox2').style.display = 'block';
+                musicClicks = 0;
+            }
+            musicTimer = setTimeout(() => musicClicks = 0, 800);
+        });
+
+        function searchSg(val) {
+            const resDiv = document.getElementById('sgSearchResults');
+            if(!val) { resDiv.innerHTML = ''; return; }
+            resDiv.innerHTML = `<p style="cursor:pointer; color:blue;" onclick="window.open('https://reddit.com/r/soundgasm/search?q=${val}', '_blank')">🔍 Tìm trên Reddit: <b>${val}</b></p>`;
+        }
+
+        async function addSecretTrack() {
+            const input = document.getElementById('secSgLink').value;
+            try {
+                const res = await fetch(`${BACKEND_URL}/extract`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url: input})
+                });
+                const data = await res.json();
+                if(data.success) {
+                    let list = JSON.parse(localStorage.getItem('secretPlaylist') || '[]');
+                    list.push({title: "Soundgasm Track " + (list.length+1), link: data.m4a_link});
+                    localStorage.setItem('secretPlaylist', JSON.stringify(list));
+                    alert("Đã thêm vào Secret Playlist thành công!");
+                } else {
+                    alert("Lỗi: " + data.error);
+                }
+            } catch (err) {
+                alert("Không kết nối được với Python Server!");
+            }
+        }
+    </script>
+</body>
+</html>
