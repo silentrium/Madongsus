@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Soundgasm Setting - Music & Secret Playlist</title>
+    <title>Soundgasm Setting</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .dropdown-container { position: relative; display: inline-block; width: 60%; }
@@ -13,12 +13,10 @@
         .dropdown-item { padding: 5px; cursor: pointer; }
         .dropdown-item:hover { background: #e6f2ff; }
         .secret-trigger-area {
-            height: 40px; border: 2px dashed #bbb; margin-top: 20px;
-            display: flex; align-items: center; justify-content: center;
-            color: #777; font-size: 11px; cursor: pointer; user-select: none;
-            background: #fafafa; border-radius: 4px;
+            height: 50px; border: 2px dashed #ccc; margin-top: 15px;
+            cursor: pointer; background: #fafafa; border-radius: 4px;
         }
-        .secret-container { display: none; border: 1px solid #ffe0b2; background: #fff8e6; padding: 15px; margin-top: 10px; border-radius: 4px; }
+        .secret-container { display: none; border-top: 1px dashed #ccc; padding-top: 15px; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -33,9 +31,43 @@
         <a href="setting.html">Setting</a>
     </nav>
 
-    <div class="setting-container" style="flex-direction: column; gap: 20px;">
+    <div class="setting-container" style="display: flex; flex-direction: column; gap: 20px;">
         
-        <!-- PHẦN 1: MUSIC & NORMAL PLAYLIST SETTING -->
+        <!-- BOX 1: DEFAULT SETTING -->
+        <div class="setting-box" style="width: 100%;">
+            <h3>Default Setting</h3>
+            <label>Text 1 (Default Title):</label><br>
+            <input type="text" id="defText1" style="width:90%;"><br><br>
+            
+            <label>Text 2 (Default Description):</label><br>
+            <textarea id="defText2" style="width:90%; height:50px;"></textarea><br>
+
+            <div style="font-size:11px; background:#f4f4f4; border:1px solid #ddd; padding:6px; margin:5px 0 10px 0; border-radius:3px; width:90%;">
+                <b>HTML Quick Reference:</b><br>
+                <code>&lt;b&gt;In đậm&lt;/b&gt;</code> | 
+                <code>&lt;i&gt;In nghiêng&lt;/i&gt;</code> | 
+                <code>&lt;br&gt;Xuống dòng</code> | 
+                <code>&lt;u&gt;Gạch chân&lt;/u&gt;</code>
+            </div>
+
+            <label>Default YouTube Link:</label><br>
+            <input type="text" id="defYoutubeUrl" placeholder="https://www.youtube.com/watch?v=..." style="width:90%;"><br><br>
+
+            <button class="btn-ctrl" id="saveDefBtn" onclick="saveDefaultSettings()">Save Default</button>
+            <button class="btn-ctrl" onclick="restoreLatestSettings()" style="background:#e0e0e0;">Restore Latest</button>
+
+            <h4>YouTube / Normal History Log (Mới nhất lên trên)</h4>
+            <div class="playlist-scroll" style="height:120px;">
+                <table class="history-table" id="ytHistoryTable">
+                    <thead>
+                        <tr><th>Title</th><th>YouTube Link</th><th>Time (Play)</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BOX 2: MUSIC & NORMAL PLAYLIST SETTING -->
         <div class="setting-box" style="width: 100%;">
             <h3>Music & Normal Playlist Setting</h3>
             <label>Chọn hoặc tạo Playlist mới (Gõ để tìm kiếm / Tạo mới nếu không trùng):</label><br>
@@ -45,7 +77,6 @@
             </div>
             <br><br>
 
-            <!-- Input thêm bài hát Normal Playlist -->
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                 <input type="text" id="normSongTitle" placeholder="Tên bài hát..." style="flex: 1;">
                 <input type="text" id="normSongLink" placeholder="Link YouTube..." style="flex: 2;">
@@ -63,52 +94,50 @@
             </div>
             <br>
             <button class="btn-ctrl" onclick="saveNormalPlaylist()">Save Playlist</button>
-        </div>
 
-        <!-- PHẦN 2: KHU VỰC ẨN KÍCH HOẠT SECRET BOX (CLICK 3 LẦN) -->
-        <div class="secret-trigger-area" id="secretTriggerBox" title="Click 3 lần liên tiếp để mở Secret Box">
-            🔒 [Khu vực ẩn - Click 3 lần liên tiếp để mở Secret Playlist & History Log]
-        </div>
+            <!-- KHU VỰC MECHANIC ẨN (Không viết chữ hướng dẫn ở trên, click 3 lần mở secret box) -->
+            <div class="secret-trigger-area" id="secretTriggerBox" title=""></div>
 
-        <!-- SECRET BOX CONTAINER -->
-        <div class="secret-container" id="secretBoxContainer">
-            <h3 style="margin-top:0; color: #b78103;">Secret Playlist Setting</h3>
-            <label>Chọn hoặc tạo Secret Playlist mới:</label><br>
-            <div class="dropdown-container">
-                <input type="text" id="secretPlaylistInput" placeholder="Nhập hoặc chọn tên secret playlist..." style="width: 100%;" oninput="handleSecretPlaylistInput()" onfocus="showSecretDropdown()">
-                <div id="secretDropdownList" class="dropdown-list"></div>
+            <!-- SECRET BOX CONTAINER NẰM TRONG CÙNG BOX LỚN -->
+            <div class="secret-container" id="secretBoxContainer">
+                <h3 style="margin-top:0; color: #b78103;">Secret Playlist Setting</h3>
+                <label>Chọn hoặc tạo Secret Playlist mới:</label><br>
+                <div class="dropdown-container">
+                    <input type="text" id="secretPlaylistInput" placeholder="Nhập hoặc chọn tên secret playlist..." style="width: 100%;" oninput="handleSecretPlaylistInput()" onfocus="showSecretDropdown()">
+                    <div id="secretDropdownList" class="dropdown-list"></div>
+                </div>
+                <br><br>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" id="secSgLink" placeholder="https://soundgasm.net/u/Author/Title-Track" style="flex: 1;">
+                    <button class="btn-ctrl" onclick="addSecretTrack()">Add</button>
+                </div>
+
+                <h4>Danh sách Tracks trong Secret Playlist:</h4>
+                <div class="playlist-scroll">
+                    <table class="history-table" id="secretTrackTable">
+                        <thead>
+                            <tr><th style="width: 60px;">Move</th><th style="width: 40px;">STT</th><th>Title</th><th>Author</th><th>Duration</th><th>Soundgasm Link</th><th>.m4a Link</th><th style="width: 50px;">Action</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <br>
+                <button class="btn-ctrl" onclick="saveSecretPlaylist()">Save Secret Playlist</button>
+
+                <h4 style="margin-top: 20px;">Soundgasm History Log (Mới nhất lên trên)</h4>
+                <div class="playlist-scroll" style="height: 140px;">
+                    <table class="history-table" id="secretHistoryTable">
+                        <thead>
+                            <tr><th>Title</th><th>Author</th><th>Duration</th><th>Soundgasm Link</th><th>.m4a Link</th><th>Time (Play)</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <br>
+                <button class="btn-ctrl" onclick="toggleSecretBox(false)" style="background: #ccc;">Close Secret Box</button>
             </div>
-            <br><br>
 
-            <!-- Input thêm link Soundgasm -->
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <input type="text" id="secSgLink" placeholder="https://soundgasm.net/u/Author/Title-Track" style="flex: 1;">
-                <button class="btn-ctrl" onclick="addSecretTrack()">Add</button>
-            </div>
-
-            <h4>Danh sách Tracks trong Secret Playlist:</h4>
-            <div class="playlist-scroll">
-                <table class="history-table" id="secretTrackTable">
-                    <thead>
-                        <tr><th style="width: 60px;">Move</th><th style="width: 40px;">STT</th><th>Title</th><th>Author</th><th>Duration</th><th>Soundgasm Link</th><th>.m4a Link</th><th style="width: 50px;">Action</th></tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            <br>
-            <button class="btn-ctrl" onclick="saveSecretPlaylist()">Save Secret Playlist</button>
-
-            <h4 style="margin-top: 20px;">Soundgasm History Log (Mới nhất lên trên)</h4>
-            <div class="playlist-scroll" style="height: 140px;">
-                <table class="history-table" id="secretHistoryTable">
-                    <thead>
-                        <tr><th>Title</th><th>Author</th><th>Duration</th><th>Soundgasm Link</th><th>.m4a Link</th><th>Time (Play)</th></tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            <br>
-            <button class="btn-ctrl" onclick="toggleSecretBox(false)" style="background: #ccc;">Close Secret Box</button>
         </div>
 
     </div>
@@ -118,6 +147,43 @@
     <script>
         const BACKEND_URL = "";
         let clickCount = 0, clickTimer = null;
+
+        const defaultInitialState = {
+            title: "We Don't Talk Anymore",
+            desc: "<b>Artist:</b> Charlie Puth ft. Selena Gomez<br><b>Duration:</b> 03:37<br><b>Lyrics:</b><br>We don't talk anymore, like we used to do...",
+            ytUrl: "https://www.youtube.com/watch?v=3AtDnEC4zak"
+        };
+
+        function saveDefaultSettings() {
+            const title = document.getElementById('defText1').value;
+            const desc = document.getElementById('defText2').value;
+            const ytUrl = document.getElementById('defYoutubeUrl').value.trim();
+
+            const settingsData = {title, desc, ytUrl};
+            localStorage.setItem('defaultSettings', JSON.stringify(settingsData));
+            localStorage.setItem('latestBackupSettings', JSON.stringify(settingsData));
+            showToast("Đã lưu Default Setting thành công!");
+        }
+
+        function restoreLatestSettings() {
+            const latest = JSON.parse(localStorage.getItem('latestBackupSettings') || JSON.stringify(defaultInitialState));
+            document.getElementById('defText1').value = latest.title;
+            document.getElementById('defText2').value = latest.desc;
+            document.getElementById('defYoutubeUrl').value = latest.ytUrl;
+            localStorage.setItem('defaultSettings', JSON.stringify(latest));
+            showToast("Đã khôi phục cài đặt gần nhất!");
+        }
+
+        function loadDefaultSettingsUI() {
+            const savedDef = JSON.parse(localStorage.getItem('defaultSettings') || JSON.stringify(defaultInitialState));
+            document.getElementById('defText1').value = savedDef.title || defaultInitialState.title;
+            document.getElementById('defText2').value = savedDef.desc || defaultInitialState.desc;
+            document.getElementById('defYoutubeUrl').value = savedDef.ytUrl || defaultInitialState.ytUrl;
+
+            const ytHistory = JSON.parse(localStorage.getItem('ytHistory') || '[]');
+            const tbody = document.querySelector('#ytHistoryTable tbody');
+            tbody.innerHTML = ytHistory.map(h => `<tr><td>${h.title}</td><td><a href="${h.link}" target="_blank">${h.link}</a></td><td>${h.time}</td></tr>`).join('');
+        }
 
         // --- QUẢN LÝ NORMAL PLAYLIST ---
         let currentNormalPlaylist = "";
@@ -135,10 +201,7 @@
         function renderNormalDropdown(items) {
             const dropdown = document.getElementById('normalDropdownList');
             dropdown.innerHTML = "";
-            if(items.length === 0) {
-                dropdown.style.display = "none";
-                return;
-            }
+            if(items.length === 0) { dropdown.style.display = "none"; return; }
             items.forEach(name => {
                 let div = document.createElement('div');
                 div.className = "dropdown-item";
@@ -167,7 +230,6 @@
                 currentNormalPlaylist = val;
                 renderNormalTracks();
             } else if (val !== "") {
-                // Kiểm tra nếu gõ tên hoàn toàn mới không trùng -> Tự động tạo mới
                 if (!keys.includes(val)) {
                     currentNormalPlaylist = val;
                     list[val] = [];
@@ -277,10 +339,7 @@
         function renderSecretDropdown(items) {
             const dropdown = document.getElementById('secretDropdownList');
             dropdown.innerHTML = "";
-            if(items.length === 0) {
-                dropdown.style.display = "none";
-                return;
-            }
+            if(items.length === 0) { dropdown.style.display = "none"; return; }
             items.forEach(name => {
                 let div = document.createElement('div');
                 div.className = "dropdown-item";
@@ -344,7 +403,6 @@
                     let list = getSecretPlaylists();
                     if(!list[currentSecretPlaylist]) list[currentSecretPlaylist] = [];
 
-                    // Lấy duration chuẩn từ file m4a hoặc giả lập thời lượng
                     let duration = "03:30"; 
 
                     list[currentSecretPlaylist].push({
@@ -438,7 +496,8 @@
         }
 
         window.onload = () => {
-            // Khởi tạo hiển thị dữ liệu ban đầu nếu có
+            loadDefaultSettingsUI();
+
             const normalList = getNormalPlaylists();
             const normalKeys = Object.keys(normalList);
             if(normalKeys.length > 0) {
