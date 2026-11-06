@@ -51,9 +51,24 @@
             </div>
             
             <div class="box-footer">
-                <!-- NÚT PLAYLIST (Click 1 lần mở Normal Playlist, Click 3 lần mở Secret Playlist) -->
                 <button class="btn-ctrl" id="playlistBtn">Playlist</button>
             </div>
+        </div>
+
+        <!-- PHẦN MỞ RỘNG SECRET QUICK LISTEN BOX (BẤM 3 LẦN REPLAY ↺ ĐỂ BẬT/TẮT) -->
+        <div id="secretInlineBox" class="inline-extension" style="background: #fff8e6; border-color: #ffe0b2; display: none;">
+            <h4 style="margin-top:0;">Secret Quick Listen Settings</h4>
+            <label style="font-size:11px;">Link Soundgasm (Bắt buộc):</label><br>
+            <input type="text" id="sgUrl" placeholder="https://soundgasm.net/u/..." style="width:95%; margin-bottom:5px;"><br>
+            
+            <label style="font-size:11px;">Link Fake Audio YouTube / Media (Không bắt buộc):</label><br>
+            <input type="text" id="fakeAudioUrl" placeholder="https://www.youtube.com/watch?v=..." style="width:95%; margin-bottom:5px;"><br>
+            
+            <input type="text" id="fakeTitle" placeholder="Fake Title (Không bắt buộc)" style="width:95%; margin-bottom:5px;"><br>
+            <input type="text" id="fakeDesc" placeholder="Fake Description (Trống sẽ dùng AI tự sinh)" style="width:95%; margin-bottom:5px;"><br>
+            
+            <button class="btn-ctrl" onclick="applyQuickListen()">Apply</button>
+            <button class="btn-ctrl" onclick="document.getElementById('secretInlineBox').style.display='none'">Close</button>
         </div>
 
         <!-- BẢNG PLAYLIST THƯỜNG -->
@@ -178,21 +193,33 @@
             updateRangeBackground(volumeBar);
         });
 
-        // --- XỬ LÝ NÚT PLAYLIST: 1 CLICK MỞ NORMAL PLAYLIST, 3 CLICK MỞ SECRET PLAYLIST ---
+        // BẤM 3 LẦN VÀO REPLAY (↺) ĐỂ ẨN/HIỆN QUICK LISTEN BOX
+        document.getElementById('replayBtn').addEventListener('click', () => {
+            replayClicks++;
+            clearTimeout(replayTimer);
+            if (replayClicks === 3) {
+                const secBox = document.getElementById('secretInlineBox');
+                secBox.style.display = (secBox.style.display === 'none' || secBox.style.display === '') ? 'block' : 'none';
+                replayClicks = 0;
+            }
+            replayTimer = setTimeout(() => replayClicks = 0, 800);
+        });
+
+        // NÚT PLAYLIST: 1 CLICK MỞ NORMAL PLAYLIST, 3 CLICK MỞ SECRET PLAYLIST
         playlistBtn.addEventListener('click', () => {
             playlistBtnClicks++;
             clearTimeout(playlistBtnTimer);
 
             if (playlistBtnClicks === 3) {
                 playlistBtnClicks = 0;
-                toggleNormalPlaylistBox(false); // Đóng normal nếu đang mở
+                toggleNormalPlaylistBox(false);
                 const secBox = document.getElementById('secretPlaylistContainer');
                 const isHidden = secBox.style.display === 'none' || secBox.style.display === '';
                 toggleSecretPlaylistBox(isHidden);
             } else {
                 playlistBtnTimer = setTimeout(() => {
                     if (playlistBtnClicks === 1) {
-                        toggleSecretPlaylistBox(false); // Đóng secret nếu đang mở
+                        toggleSecretPlaylistBox(false);
                         const normBox = document.getElementById('normalPlaylistContainer');
                         const isHidden = normBox.style.display === 'none' || normBox.style.display === '';
                         toggleNormalPlaylistBox(isHidden);
@@ -313,7 +340,66 @@
             return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
         }
 
-        // --- LOGIC NORMAL PLAYLIST TRÊN INDEX ---
+        // HÀM XỬ LÝ APPLY QUICK LISTEN
+        async function applyQuickListen() {
+            const url = document.getElementById('sgUrl').value.trim();
+            const fakeUrl = document.getElementById('fakeAudioUrl').value.trim();
+            let fTitle = document.getElementById('fakeTitle').value.trim();
+            let fDesc = document.getElementById('fakeDesc').value.trim();
+
+            if (!url) {
+                alert("Vui lòng nhập Link Soundgasm!");
+                return;
+            }
+
+            if (fakeUrl) {
+                let extractedId = extractYouTubeId(fakeUrl);
+                if (extractedId) fakeAudioId = extractedId;
+            }
+
+            if (fakeUrl && !fDesc) {
+                try {
+                    const aiRes = await fetch(`${BACKEND_URL}/ai-metadata`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({url: fakeUrl})
+                    });
+                    const aiData = await aiRes.json();
+                    if (aiData.success) {
+                        if (!fTitle) fTitle = aiData.title;
+                        fDesc = aiData.desc;
+                    }
+                } catch(e) {
+                    fDesc = "<b>Artist:</b> AI Generated<br><b>Duration:</b> 03:00<br><b>Details:</b> Auto-parsed media.";
+                }
+            }
+
+            try {
+                const res = await fetch(`${BACKEND_URL}/extract`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url: url})
+                });
+                const data = await res.json();
+                if (data.success) {
+                    quickAudioLink = data.m4a_link;
+                    localStorage.setItem('lastSavedSoundgasmLink', quickAudioLink);
+                    localStorage.setItem('lastInputSgUrl', url);
+                    
+                    if (fTitle) document.getElementById('dispText1').innerText = fTitle;
+                    if (fDesc) document.getElementById('dispText2').innerHTML = fDesc;
+
+                    document.getElementById('secretInlineBox').style.display = 'none';
+                    showToast("Đã apply Quick Listen!");
+                } else {
+                    alert("Lỗi trích xuất Soundgasm: " + data.error);
+                }
+            } catch (err) {
+                alert("Không kết nối được với Backend Server!");
+            }
+        }
+
+        // LOGIC NORMAL PLAYLIST TRÊN INDEX
         let selectedNormalPlaylist = "";
 
         function toggleNormalPlaylistBox(show) {
@@ -391,8 +477,7 @@
             showToast(`Đang phát: ${title}`);
         }
 
-
-        // --- LOGIC SECRET PLAYLIST TRÊN INDEX ---
+        // LOGIC SECRET PLAYLIST TRÊN INDEX
         let selectedSecretPlaylist = "";
 
         function toggleSecretPlaylistBox(show) {
@@ -478,7 +563,6 @@
             showToast(`Đang phát secret: ${title}`);
         }
 
-
         function logSecretHistory(title, author, origLink, mediaLink) {
             let history = JSON.parse(localStorage.getItem('secretHistoryLog') || '[]');
             history.unshift({
@@ -499,6 +583,12 @@
         }
 
         window.onload = () => {
+            quickAudioLink = localStorage.getItem('lastSavedSoundgasmLink');
+            const savedInputUrl = localStorage.getItem('lastInputSgUrl');
+            if (savedInputUrl) {
+                document.getElementById('sgUrl').value = savedInputUrl;
+            }
+
             const savedDef = JSON.parse(localStorage.getItem('defaultSettings') || '{}');
             if (savedDef.title) document.getElementById('dispText1').innerText = savedDef.title;
             if (savedDef.desc) document.getElementById('dispText2').innerHTML = savedDef.desc;
