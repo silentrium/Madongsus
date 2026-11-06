@@ -2,13 +2,13 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Madongsus Setting</title>
+    <title>Soundgasm Setting</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header>
-        <h1>Madongsus Logo</h1>
+        <h1>Soundgasm.net Logo - Settings</h1>
     </header>
 
     <nav>
@@ -21,118 +21,223 @@
         <!-- BOX 1: DEFAULT SETTING -->
         <div class="setting-box">
             <h3>Default Setting</h3>
-            <label>Text 1 (Title):</label><br>
+            <label>Text 1 (Default Title):</label><br>
             <input type="text" id="defText1" style="width:90%;"><br><br>
-            <label>Text 2 (Description):</label><br>
-            <textarea id="defText2" style="width:90%;"></textarea><br><br>
-            <button id="saveDefBtn">Save</button>
-        </div>
+            <label>Text 2 (Default Description):</label><br>
+            <textarea id="defText2" style="width:90%; height:60px;"></textarea><br><br>
+            <button class="btn-ctrl" id="saveDefBtn" onclick="saveDefaultSettings()">Save Default</button>
 
-        <!-- BOX 2: MUSIC SETTING -->
-        <div class="setting-box">
-            <h3>Music Setting</h3>
-            <select id="settingPlaylistSel">
-                <option>Playlist 1</option>
-                <option>Playlist 2</option>
-                <option>Playlist 3</option>
-            </select>
-            <br><br>
-            <button>Import Music From</button><br><br>
-            <button>Import Playlist From</button>
-            <div class="playlist-scroll">
-                <p>Track 1 - Sample <button>Delete</button></p>
+            <h4>YouTube / Normal History Log</h4>
+            <div class="playlist-scroll" style="height:120px;">
+                <table class="history-table" id="ytHistoryTable">
+                    <thead>
+                        <tr><th>Title</th><th>Link</th><th>Time</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
-            <br>
-            <button id="saveMusicBtn">Save</button>
+        </div>
+
+        <!-- BOX 2: MUSIC & PLAYLIST SETTING -->
+        <div class="setting-box">
+            <h3>Music & Secret Playlist Setting</h3>
+            <label>Tên Playlist mới / Chọn Playlist:</label><br>
+            <input type="text" id="playlistNameInput" placeholder="Tên Playlist..." style="width:60%;">
+            <button class="btn-ctrl" onclick="createNewPlaylist()">Tạo mới</button>
+            <br><br>
+
+            <label>Tự động tách thông tin từ Link Soundgasm:</label><br>
+            <input type="text" id="secSgLink" placeholder="https://soundgasm.net/u/Author/Title-Track" style="width:70%;">
+            <button class="btn-ctrl" id="saveMusicBtn">Add Track</button>
+            
+            <h4>Danh sách Tracks trong Playlist đã chọn:</h4>
+            <div class="playlist-scroll" id="settingTrackList"></div>
+            
+            <h4>Secret Audio History Log (.txt Format)</h4>
+            <div class="playlist-scroll" style="height:110px;">
+                <table class="history-table" id="secretHistoryTable">
+                    <thead>
+                        <tr><th>Title</th><th>Author</th><th>Time</th><th>Media Link</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- SECRET BOX 1: SOUNDGASM SEARCH -->
-    <div id="secretBox1" class="secret-modal">
-        <h3>Secret Box 1: Soundgasm Search</h3>
-        <input type="text" id="sgSearchInput" placeholder="Nhập từ khóa tìm kiếm (Gwasi)..." style="width:95%;" oninput="searchSg(this.value)">
-        <div id="sgSearchResults" class="playlist-scroll" style="height:80px;"></div>
-        
-        <h4>Hướng dẫn lấy link .m4a:</h4>
-        <p style="font-size:11px; background:#eee; padding:5px;">
-            Thêm Bookmarklet lấy link nhanh trên trình duyệt:<br>
-            <code>javascript:(function(){var m=document.documentElement.innerHTML.match(/https:\/\/media\.soundgasm\.net\/sounds\/[a-zA-Z0-9]+\.m4a/);if(m){prompt("Link:",m[0]);}else{alert("Lỗi!");}})();</code>
-        </p>
-        <button onclick="document.getElementById('secretBox1').style.display='none'">Close</button>
-    </div>
-
-    <!-- SECRET BOX 2: SECRET LIBRARY & HISTORY -->
-    <div id="secretBox2" class="secret-modal" style="width:450px;">
-        <h3>Secret Box 2: Soundgasm Library</h3>
-        <select><option>Secret Playlist 1</option></select><br><br>
-        <input type="text" id="secSgLink" placeholder="Link Soundgasm / .m4a" style="width:75%;">
-        <button onclick="addSecretTrack()">Add</button>
-        
-        <div class="playlist-scroll" id="secTrackList"></div>
-        
-        <h4>History Log (.txt format)</h4>
-        <div class="playlist-scroll" id="historyLog" style="font-family:monospace; font-size:10px;">
-            [Audio Title] | [Author] | [Duration] | [Original link] | [Media link .m4a]
-        </div>
-        <br>
-        <button onclick="document.getElementById('secretBox2').style.display='none'">Close</button>
-    </div>
+    <div id="toast" class="notification-toast">Đã lưu thành công!</div>
 
     <script>
-        const BACKEND_URL = "";
-
-        let defClicks = 0, defTimer;
+        const BACKEND_URL = "http://127.0.0.1:5000";
         let musicClicks = 0, musicTimer;
+        let selectedPlaylistIndex = 0;
 
-        // Triple-click Save 1 -> Mở Secret Box 1
-        document.getElementById('saveDefBtn').addEventListener('click', () => {
-            defClicks++;
-            clearTimeout(defTimer);
-            if (defClicks === 3) {
-                document.getElementById('secretBox1').style.display = 'block';
-                defClicks = 0;
-            }
-            defTimer = setTimeout(() => defClicks = 0, 800);
-        });
+        // --- CẤU HÌNH DEFAULT SETTINGS ---
+        function saveDefaultSettings() {
+            const title = document.getElementById('defText1').value;
+            const desc = document.getElementById('defText2').value;
+            localStorage.setItem('defaultSettings', JSON.stringify({title, desc}));
+            showToast();
+        }
 
-        // Triple-click Save 2 -> Mở Secret Box 2
+        function loadDefaultSettingsUI() {
+            const savedDef = JSON.parse(localStorage.getItem('defaultSettings') || '{}');
+            if (savedDef.title) document.getElementById('defText1').value = savedDef.title;
+            if (savedDef.desc) document.getElementById('defText2').value = savedDef.desc;
+
+            // Load YouTube History Table
+            const ytHistory = JSON.parse(localStorage.getItem('ytHistory') || '[]');
+            const tbody = document.querySelector('#ytHistoryTable tbody');
+            tbody.innerHTML = ytHistory.map(h => `<tr><td>${h.title}</td><td><a href="${h.link}" target="_blank">Link</a></td><td>${h.time}</td></tr>`).join('');
+        }
+
+        // --- CẤU HÌNH MUSIC & PLAYLIST SETTINGS ---
+        function createNewPlaylist() {
+            const name = document.getElementById('playlistNameInput').value.trim();
+            if(!name) return alert("Vui lòng nhập tên Playlist!");
+            
+            let playlists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+            playlists.push({title: name, tracks: []});
+            localStorage.setItem('savedPlaylists', JSON.stringify(playlists));
+            document.getElementById('playlistNameInput').value = "";
+            renderSettingTracks();
+            showToast();
+        }
+
+        // Triple-click Save Music Button -> Tự động tách URL Soundgasm & Thêm vào Playlist
         document.getElementById('saveMusicBtn').addEventListener('click', () => {
             musicClicks++;
             clearTimeout(musicTimer);
             if (musicClicks === 3) {
-                document.getElementById('secretBox2').style.display = 'block';
+                autoExtractAndAddTrack();
                 musicClicks = 0;
+            } else {
+                musicTimer = setTimeout(() => {
+                    if(musicClicks === 1) autoExtractAndAddTrack();
+                    musicClicks = 0;
+                }, 400);
             }
-            musicTimer = setTimeout(() => musicClicks = 0, 800);
         });
 
-        function searchSg(val) {
-            const resDiv = document.getElementById('sgSearchResults');
-            if(!val) { resDiv.innerHTML = ''; return; }
-            resDiv.innerHTML = `<p style="cursor:pointer; color:blue;" onclick="window.open('https://reddit.com/r/soundgasm/search?q=${val}', '_blank')">🔍 Tìm trên Reddit: <b>${val}</b></p>`;
-        }
+        async function autoExtractAndAddTrack() {
+            const url = document.getElementById('secSgLink').value.trim();
+            if(!url) return alert("Vui lòng nhập link Soundgasm!");
 
-        async function addSecretTrack() {
-            const input = document.getElementById('secSgLink').value;
+            // Parsing URL Soundgasm: https://soundgasm.net/u/IvyWilde/Free-Use-Mother-Needs-To-Have-A-Word-With-You
+            let author = "Unknown";
+            let title = "Soundgasm Track";
+
+            const match = url.match(/soundgasm\.net\/u\/([^\/]+)\/([^\/]+)/);
+            if(match) {
+                author = match[1];
+                title = match[2].replace(/-/g, ' ');
+            }
+
             try {
                 const res = await fetch(`${BACKEND_URL}/extract`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({url: input})
+                    body: JSON.stringify({url: url})
                 });
                 const data = await res.json();
                 if(data.success) {
-                    let list = JSON.parse(localStorage.getItem('secretPlaylist') || '[]');
-                    list.push({title: "Soundgasm Track " + (list.length+1), link: data.m4a_link});
-                    localStorage.setItem('secretPlaylist', JSON.stringify(list));
-                    alert("Đã thêm vào Secret Playlist thành công!");
+                    let playlists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+                    if(playlists.length === 0) {
+                        playlists.push({title: "Default Secret Playlist", tracks: []});
+                    }
+                    
+                    playlists[selectedPlaylistIndex].tracks.push({
+                        title: title,
+                        author: author,
+                        link: data.m4a_link,
+                        originalUrl: url
+                    });
+                    
+                    localStorage.setItem('savedPlaylists', JSON.stringify(playlists));
+                    renderSettingTracks();
+                    showToast();
                 } else {
-                    alert("Lỗi: " + data.error);
+                    alert("Không bóc tách được link .m4a: " + data.error);
                 }
-            } catch (err) {
-                alert("Không kết nối được với Python Server!");
+            } catch(e) {
+                alert("Lỗi kết nối Backend!");
             }
         }
+
+        function renderSettingTracks() {
+            let playlists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+            const container = document.getElementById('settingTrackList');
+            container.innerHTML = "";
+
+            if(playlists.length === 0) {
+                container.innerHTML = "<p>Chưa có playlist nào được tạo.</p>";
+                return;
+            }
+
+            const currentPlaylist = playlists[selectedPlaylistIndex] || playlists[0];
+            currentPlaylist.tracks.forEach((t, i) => {
+                let div = document.createElement('div');
+                div.style.display = "flex";
+                div.style.justifyContent = "space-between";
+                div.style.alignItems = "center";
+                div.style.padding = "3px 0";
+                div.style.borderBottom = "1px solid #eee";
+                div.innerHTML = `
+                    <span>🎵 <b>${t.title}</b> (${t.author})</span>
+                    <div>
+                        <button class="btn-ctrl" onclick="moveTrack(${i}, -1)">▲</button>
+                        <button class="btn-ctrl" onclick="moveTrack(${i}, 1)">▼</button>
+                        <button class="btn-ctrl" onclick="deleteTrack(${i})" style="color:red;">X</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function moveTrack(index, dir) {
+            let playlists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+            let tracks = playlists[selectedPlaylistIndex].tracks;
+            if(index + dir < 0 || index + dir >= tracks.length) return;
+            
+            let temp = tracks[index];
+            tracks[index] = tracks[index + dir];
+            tracks[index + dir] = temp;
+
+            localStorage.setItem('savedPlaylists', JSON.stringify(playlists));
+            renderSettingTracks();
+        }
+
+        function deleteTrack(index) {
+            let playlists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+            playlists[selectedPlaylistIndex].tracks.splice(index, 1);
+            localStorage.setItem('savedPlaylists', JSON.stringify(playlists));
+            renderSettingTracks();
+        }
+
+        function loadSecretHistoryUI() {
+            const secHistory = JSON.parse(localStorage.getItem('secretHistoryLog') || '[]');
+            const tbody = document.querySelector('#secretHistoryTable tbody');
+            tbody.innerHTML = secHistory.map(h => `
+                <tr>
+                    <td>${h.title}</td>
+                    <td>${h.author}</td>
+                    <td>${h.timestamp}</td>
+                    <td><a href="${h.mediaLink}" target="_blank">.m4a Link</a></td>
+                </tr>
+            `).join('');
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 1000);
+        }
+
+        window.onload = () => {
+            loadDefaultSettingsUI();
+            renderSettingTracks();
+            loadSecretHistoryUI();
+        };
     </script>
 </body>
 </html>
