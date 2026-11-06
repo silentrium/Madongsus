@@ -5,18 +5,20 @@
     <title>Soundgasm Setting</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .dropdown-container { position: relative; display: inline-block; width: 60%; }
-        .dropdown-list {
-            position: absolute; border: 1px solid #ccc; background: #fff;
-            z-index: 99; width: 100%; max-height: 120px; overflow-y: auto; display: none;
-        }
-        .dropdown-item { padding: 5px; cursor: pointer; }
-        .dropdown-item:hover { background: #e6f2ff; }
         .secret-trigger-area {
-            height: 50px; border: 2px dashed #ccc; margin-top: 15px;
-            cursor: pointer; background: #fafafa; border-radius: 4px;
+            height: 50px; 
+            border: 2px dashed #ccc; 
+            margin-top: 15px;
+            cursor: pointer; 
+            background: #fafafa; 
+            border-radius: 4px;
         }
-        .secret-container { display: none; border-top: 1px dashed #ccc; padding-top: 15px; margin-top: 15px; }
+        .secret-container { 
+            display: none; 
+            border-top: 1px dashed #ccc; 
+            padding-top: 15px; 
+            margin-top: 15px; 
+        }
     </style>
 </head>
 <body>
@@ -33,7 +35,7 @@
 
     <div class="setting-container" style="display: flex; flex-direction: column; gap: 20px;">
         
-        <!-- BOX 1: DEFAULT SETTING -->
+        <!-- DEFAULT SETTING -->
         <div class="setting-box" style="width: 100%;">
             <h3>Default Setting</h3>
             <label>Text 1 (Default Title):</label><br>
@@ -44,19 +46,16 @@
 
             <div style="font-size:11px; background:#f4f4f4; border:1px solid #ddd; padding:6px; margin:5px 0 10px 0; border-radius:3px; width:90%;">
                 <b>HTML Quick Reference:</b><br>
-                <code>&lt;b&gt;In đậm&lt;/b&gt;</code> | 
-                <code>&lt;i&gt;In nghiêng&lt;/i&gt;</code> | 
-                <code>&lt;br&gt;Xuống dòng</code> | 
-                <code>&lt;u&gt;Gạch chân&lt;/u&gt;</code>
+                <code>&lt;b&gt;In đậm&lt;/b&gt;</code> | <code>&lt;i&gt;In nghiêng&lt;/i&gt;</code> | <code>&lt;br&gt;Xuống dòng&lt;/br&gt;</code>
             </div>
 
             <label>Default YouTube Link:</label><br>
             <input type="text" id="defYoutubeUrl" placeholder="https://www.youtube.com/watch?v=..." style="width:90%;"><br><br>
 
-            <button class="btn-ctrl" id="saveDefBtn" onclick="saveDefaultSettings()">Save Default</button>
+            <button class="btn-ctrl" onclick="saveDefaultSettings()">Save Default</button>
             <button class="btn-ctrl" onclick="restoreLatestSettings()" style="background:#e0e0e0;">Restore Latest</button>
 
-            <h4>YouTube / Normal History Log (Mới nhất lên trên)</h4>
+            <h4>YouTube History Log</h4>
             <div class="playlist-scroll" style="height:120px;">
                 <table class="history-table" id="ytHistoryTable">
                     <thead>
@@ -67,16 +66,9 @@
             </div>
         </div>
 
-        <!-- BOX 2: MUSIC & NORMAL PLAYLIST SETTING -->
+        <!-- MUSIC & SINGLE NORMAL PLAYLIST SETTING -->
         <div class="setting-box" style="width: 100%;">
-            <h3>Music & Normal Playlist Setting</h3>
-            <label>Chọn hoặc tạo Playlist mới (Gõ để tìm kiếm / Tạo mới nếu không trùng):</label><br>
-            <div class="dropdown-container">
-                <input type="text" id="normalPlaylistInput" placeholder="Nhập hoặc chọn tên playlist..." style="width: 100%;" oninput="handleNormalPlaylistInput()" onfocus="showNormalDropdown()">
-                <div id="normalDropdownList" class="dropdown-list"></div>
-            </div>
-            <br><br>
-
+            <h3>YouTube Playlist Setting</h3>
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                 <input type="text" id="normSongTitle" placeholder="Tên bài hát..." style="flex: 1;">
                 <input type="text" id="normSongLink" placeholder="Link YouTube..." style="flex: 2;">
@@ -95,19 +87,12 @@
             <br>
             <button class="btn-ctrl" onclick="saveNormalPlaylist()">Save Playlist</button>
 
-            <!-- KHU VỰC MECHANIC ẨN (Không viết chữ hướng dẫn ở trên, click 3 lần mở secret box) -->
-            <div class="secret-trigger-area" id="secretTriggerBox" title=""></div>
+            <!-- MECHANIC ẨN MỞ SECRET SETTING (CLICK 3 LẦN BÀO VÙNG TRỐNG) -->
+            <div class="secret-trigger-area" id="secretTriggerBox" title="Click 3 lần liên tiếp để mở Secret Box"></div>
 
-            <!-- SECRET BOX CONTAINER NẰM TRONG CÙNG BOX LỚN -->
+            <!-- SECRET PLAYLIST SETTING CONTAINER -->
             <div class="secret-container" id="secretBoxContainer">
-                <h3 style="margin-top:0; color: #b78103;">Secret Playlist Setting</h3>
-                <label>Chọn hoặc tạo Secret Playlist mới:</label><br>
-                <div class="dropdown-container">
-                    <input type="text" id="secretPlaylistInput" placeholder="Nhập hoặc chọn tên secret playlist..." style="width: 100%;" oninput="handleSecretPlaylistInput()" onfocus="showSecretDropdown()">
-                    <div id="secretDropdownList" class="dropdown-list"></div>
-                </div>
-                <br><br>
-
+                <h3 style="margin-top:0; color: #b78103;">Soundgasm Secret Playlist Setting</h3>
                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                     <input type="text" id="secSgLink" placeholder="https://soundgasm.net/u/Author/Title-Track" style="flex: 1;">
                     <button class="btn-ctrl" onclick="addSecretTrack()">Add</button>
@@ -137,20 +122,19 @@
                 <br>
                 <button class="btn-ctrl" onclick="toggleSecretBox(false)" style="background: #ccc;">Close Secret Box</button>
             </div>
-
         </div>
 
     </div>
 
-    <div id="toast" class="notification-toast">Thông báo thành công!</div>
+    <div id="toast" class="notification-toast">Đã lưu thành công!</div>
 
     <script>
-        const BACKEND_URL = "";
+        const BACKEND_URL = window.location.hostname.includes("github.io") ? "https://madongsus-ten.vercel.app" : "";
         let clickCount = 0, clickTimer = null;
 
         const defaultInitialState = {
             title: "We Don't Talk Anymore",
-            desc: "<b>Artist:</b> Charlie Puth ft. Selena Gomez<br><b>Duration:</b> 03:37<br><b>Lyrics:</b><br>We don't talk anymore, like we used to do...",
+            desc: "<b>Artist:</b> Charlie Puth ft. Selena Gomez<br><b>Duration:</b> 03:37",
             ytUrl: "https://www.youtube.com/watch?v=3AtDnEC4zak"
         };
 
@@ -158,11 +142,10 @@
             const title = document.getElementById('defText1').value;
             const desc = document.getElementById('defText2').value;
             const ytUrl = document.getElementById('defYoutubeUrl').value.trim();
-
-            const settingsData = {title, desc, ytUrl};
-            localStorage.setItem('defaultSettings', JSON.stringify(settingsData));
-            localStorage.setItem('latestBackupSettings', JSON.stringify(settingsData));
-            showToast("Đã lưu Default Setting thành công!");
+            const data = {title, desc, ytUrl};
+            localStorage.setItem('defaultSettings', JSON.stringify(data));
+            localStorage.setItem('latestBackupSettings', JSON.stringify(data));
+            showToast("Đã lưu Default Setting!");
         }
 
         function restoreLatestSettings() {
@@ -176,82 +159,28 @@
 
         function loadDefaultSettingsUI() {
             const savedDef = JSON.parse(localStorage.getItem('defaultSettings') || JSON.stringify(defaultInitialState));
-            document.getElementById('defText1').value = savedDef.title || defaultInitialState.title;
-            document.getElementById('defText2').value = savedDef.desc || defaultInitialState.desc;
-            document.getElementById('defYoutubeUrl').value = savedDef.ytUrl || defaultInitialState.ytUrl;
+            document.getElementById('defText1').value = savedDef.title;
+            document.getElementById('defText2').value = savedDef.desc;
+            document.getElementById('defYoutubeUrl').value = savedDef.ytUrl;
 
             const ytHistory = JSON.parse(localStorage.getItem('ytHistory') || '[]');
-            const tbody = document.querySelector('#ytHistoryTable tbody');
-            tbody.innerHTML = ytHistory.map(h => `<tr><td>${h.title}</td><td><a href="${h.link}" target="_blank">${h.link}</a></td><td>${h.time}</td></tr>`).join('');
+            document.querySelector('#ytHistoryTable tbody').innerHTML = ytHistory.map(h => `<tr><td>${h.title}</td><td><a href="${h.link}" target="_blank">${h.link}</a></td><td>${h.time}</td></tr>`).join('');
         }
 
-        // --- QUẢN LÝ NORMAL PLAYLIST ---
-        let currentNormalPlaylist = "";
-        
-        function getNormalPlaylists() {
-            return JSON.parse(localStorage.getItem('normalPlaylists') || '{}');
-        }
-
-        function showNormalDropdown() {
-            const list = getNormalPlaylists();
-            const keys = Object.keys(list);
-            renderNormalDropdown(keys);
-        }
-
-        function renderNormalDropdown(items) {
-            const dropdown = document.getElementById('normalDropdownList');
-            dropdown.innerHTML = "";
-            if(items.length === 0) { dropdown.style.display = "none"; return; }
-            items.forEach(name => {
-                let div = document.createElement('div');
-                div.className = "dropdown-item";
-                div.innerText = name;
-                div.onclick = () => {
-                    document.getElementById('normalPlaylistInput').value = name;
-                    currentNormalPlaylist = name;
-                    dropdown.style.display = "none";
-                    renderNormalTracks();
-                    showToast(`Đã chọn playlist ${name}`);
-                };
-                dropdown.appendChild(div);
-            });
-            dropdown.style.display = "block";
-        }
-
-        function handleNormalPlaylistInput() {
-            const val = document.getElementById('normalPlaylistInput').value.trim();
-            const list = getNormalPlaylists();
-            const keys = Object.keys(list);
-            const filtered = keys.filter(k => k.toLowerCase().includes(val.toLowerCase()));
-            
-            renderNormalDropdown(filtered);
-
-            if (keys.includes(val)) {
-                currentNormalPlaylist = val;
-                renderNormalTracks();
-            } else if (val !== "") {
-                if (!keys.includes(val)) {
-                    currentNormalPlaylist = val;
-                    list[val] = [];
-                    localStorage.setItem('normalPlaylists', JSON.stringify(list));
-                    renderNormalTracks();
-                    showToast(`Đã tạo playlist ${val}`);
-                }
-            }
+        // --- NORMAL PLAYLIST ---
+        function getNormalTracks() {
+            return JSON.parse(localStorage.getItem('singleNormalPlaylist') || '[]');
         }
 
         function addNormalTrack() {
-            if (!currentNormalPlaylist) return alert("Vui lòng chọn hoặc tạo Playlist trước!");
             const title = document.getElementById('normSongTitle').value.trim();
             const link = document.getElementById('normSongLink').value.trim();
-            if (!title || !link) return alert("Vui lòng nhập đầy đủ tên bài hát và link YouTube!");
+            if (!title || !link) return alert("Vui lòng nhập tên và link YouTube!");
 
-            let list = getNormalPlaylists();
-            if(!list[currentNormalPlaylist]) list[currentNormalPlaylist] = [];
-            
-            list[currentNormalPlaylist].push({title, link});
-            localStorage.setItem('normalPlaylists', JSON.stringify(list));
-            
+            let tracks = getNormalTracks();
+            tracks.push({title, link});
+            localStorage.setItem('singleNormalPlaylist', JSON.stringify(tracks));
+
             document.getElementById('normSongTitle').value = "";
             document.getElementById('normSongLink').value = "";
             renderNormalTracks();
@@ -259,14 +188,10 @@
         }
 
         function renderNormalTracks() {
-            const list = getNormalPlaylists();
-            const tracks = list[currentNormalPlaylist] || [];
+            let tracks = getNormalTracks();
             const tbody = document.querySelector('#normalTrackTable tbody');
-            tbody.innerHTML = "";
-
-            tracks.forEach((t, i) => {
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
+            tbody.innerHTML = tracks.map((t, i) => `
+                <tr>
                     <td>
                         <button class="btn-ctrl" onclick="moveNormalTrack(${i}, -1)">▲</button>
                         <button class="btn-ctrl" onclick="moveNormalTrack(${i}, 1)">▼</button>
@@ -275,36 +200,32 @@
                     <td>${t.title}</td>
                     <td><a href="${t.link}" target="_blank">${t.link}</a></td>
                     <td><button class="btn-ctrl" onclick="deleteNormalTrack(${i})" style="color:red;">X</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
+                </tr>
+            `).join('');
         }
 
         function moveNormalTrack(index, dir) {
-            let list = getNormalPlaylists();
-            let tracks = list[currentNormalPlaylist];
+            let tracks = getNormalTracks();
             if (index + dir < 0 || index + dir >= tracks.length) return;
             let temp = tracks[index];
             tracks[index] = tracks[index + dir];
             tracks[index + dir] = temp;
-            localStorage.setItem('normalPlaylists', JSON.stringify(list));
+            localStorage.setItem('singleNormalPlaylist', JSON.stringify(tracks));
             renderNormalTracks();
         }
 
         function deleteNormalTrack(index) {
-            let list = getNormalPlaylists();
-            list[currentNormalPlaylist].splice(index, 1);
-            localStorage.setItem('normalPlaylists', JSON.stringify(list));
+            let tracks = getNormalTracks();
+            tracks.splice(index, 1);
+            localStorage.setItem('singleNormalPlaylist', JSON.stringify(tracks));
             renderNormalTracks();
         }
 
         function saveNormalPlaylist() {
-            if(!currentNormalPlaylist) return alert("Chưa chọn playlist nào để save!");
-            showToast(`Đã save playlist ${currentNormalPlaylist}`);
+            showToast("Đã save playlist!");
         }
 
-
-        // --- QUẢN LÝ SECRET BOX & SECRET PLAYLIST ---
+        // --- SECRET BOX & SECRET PLAYLIST ---
         const triggerBox = document.getElementById('secretTriggerBox');
         const secretContainer = document.getElementById('secretBoxContainer');
 
@@ -324,70 +245,17 @@
             if (show) loadSecretHistoryUI();
         }
 
-        let currentSecretPlaylist = "";
-
-        function getSecretPlaylists() {
-            return JSON.parse(localStorage.getItem('savedPlaylists') || '{}');
-        }
-
-        function showSecretDropdown() {
-            const list = getSecretPlaylists();
-            const keys = Object.keys(list);
-            renderSecretDropdown(keys);
-        }
-
-        function renderSecretDropdown(items) {
-            const dropdown = document.getElementById('secretDropdownList');
-            dropdown.innerHTML = "";
-            if(items.length === 0) { dropdown.style.display = "none"; return; }
-            items.forEach(name => {
-                let div = document.createElement('div');
-                div.className = "dropdown-item";
-                div.innerText = name;
-                div.onclick = () => {
-                    document.getElementById('secretPlaylistInput').value = name;
-                    currentSecretPlaylist = name;
-                    dropdown.style.display = "none";
-                    renderSecretTracks();
-                    showToast(`Đã chọn secret playlist ${name}`);
-                };
-                dropdown.appendChild(div);
-            });
-            dropdown.style.display = "block";
-        }
-
-        function handleSecretPlaylistInput() {
-            const val = document.getElementById('secretPlaylistInput').value.trim();
-            const list = getSecretPlaylists();
-            const keys = Object.keys(list);
-            const filtered = keys.filter(k => k.toLowerCase().includes(val.toLowerCase()));
-            
-            renderSecretDropdown(filtered);
-
-            if (keys.includes(val)) {
-                currentSecretPlaylist = val;
-                renderSecretTracks();
-            } else if (val !== "") {
-                if (!keys.includes(val)) {
-                    currentSecretPlaylist = val;
-                    list[val] = [];
-                    localStorage.setItem('savedPlaylists', JSON.stringify(list));
-                    renderSecretTracks();
-                    showToast(`Đã tạo secret playlist ${val}`);
-                }
-            }
+        function getSecretTracks() {
+            return JSON.parse(localStorage.getItem('singleSecretPlaylist') || '[]');
         }
 
         async function addSecretTrack() {
-            if (!currentSecretPlaylist) return alert("Vui lòng chọn hoặc tạo Secret Playlist trước!");
             const url = document.getElementById('secSgLink').value.trim();
             if (!url) return alert("Vui lòng nhập Link Soundgasm!");
 
-            let author = "Unknown";
-            let title = "Soundgasm Track";
-
+            let author = "Unknown", title = "Soundgasm Track";
             const match = url.match(/soundgasm\.net\/u\/([^\/]+)\/([^\/]+)/);
-            if(match) {
+            if (match) {
                 author = match[1];
                 title = match[2].replace(/-/g, ' ');
             }
@@ -399,41 +267,29 @@
                     body: JSON.stringify({url: url})
                 });
                 const data = await res.json();
-                if(data.success) {
-                    let list = getSecretPlaylists();
-                    if(!list[currentSecretPlaylist]) list[currentSecretPlaylist] = [];
-
-                    let duration = "03:30"; 
-
-                    list[currentSecretPlaylist].push({
-                        title: title,
-                        author: author,
-                        duration: duration,
-                        originalUrl: url,
-                        mediaLink: data.m4a_link
+                if (data.success) {
+                    let tracks = getSecretTracks();
+                    tracks.push({
+                        title: title, author: author, duration: "03:30",
+                        originalUrl: url, mediaLink: data.m4a_link
                     });
-
-                    localStorage.setItem('savedPlaylists', JSON.stringify(list));
+                    localStorage.setItem('singleSecretPlaylist', JSON.stringify(tracks));
                     document.getElementById('secSgLink').value = "";
                     renderSecretTracks();
-                    showToast("Đã thêm track Soundgasm thành công!");
+                    showToast("Đã thêm secret track!");
                 } else {
-                    alert("Không bóc tách được link .m4a: " + data.error);
+                    alert("Lỗi trích xuất: " + data.error);
                 }
             } catch(e) {
-                alert("Lỗi kết nối Backend Server!");
+                alert("Không kết nối được Backend Server!");
             }
         }
 
         function renderSecretTracks() {
-            let list = getSecretPlaylists();
-            let tracks = list[currentSecretPlaylist] || [];
+            let tracks = getSecretTracks();
             const tbody = document.querySelector('#secretTrackTable tbody');
-            tbody.innerHTML = "";
-
-            tracks.forEach((t, i) => {
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
+            tbody.innerHTML = tracks.map((t, i) => `
+                <tr>
                     <td>
                         <button class="btn-ctrl" onclick="moveSecretTrack(${i}, -1)">▲</button>
                         <button class="btn-ctrl" onclick="moveSecretTrack(${i}, 1)">▼</button>
@@ -443,52 +299,41 @@
                     <td>${t.author}</td>
                     <td>${t.duration}</td>
                     <td><a href="${t.originalUrl}" target="_blank">Link</a></td>
-                    <td><a href="${t.mediaLink}" target="_blank">.m4a Link</a></td>
+                    <td><a href="${t.mediaLink}" target="_blank">.m4a</a></td>
                     <td><button class="btn-ctrl" onclick="deleteSecretTrack(${i})" style="color:red;">X</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function moveSecretTrack(index, dir) {
-            let list = getSecretPlaylists();
-            let tracks = list[currentSecretPlaylist];
-            if (index + dir < 0 || index + dir >= tracks.length) return;
-            let temp = tracks[index];
-            tracks[index] = tracks[index + dir];
-            tracks[index + dir] = temp;
-            localStorage.setItem('savedPlaylists', JSON.stringify(list));
-            renderSecretTracks();
-        }
-
-        function deleteSecretTrack(index) {
-            let list = getSecretPlaylists();
-            list[currentSecretPlaylist].splice(index, 1);
-            localStorage.setItem('savedPlaylists', JSON.stringify(list));
-            renderSecretTracks();
-        }
-
-        function saveSecretPlaylist() {
-            if(!currentSecretPlaylist) return alert("Chưa chọn secret playlist nào để save!");
-            showToast(`Đã save secret playlist ${currentSecretPlaylist}`);
-        }
-
-        function loadSecretHistoryUI() {
-            const secHistory = JSON.parse(localStorage.getItem('secretHistoryLog') || '[]');
-            const tbody = document.querySelector('#secretHistoryTable tbody');
-            tbody.innerHTML = secHistory.map(h => `
-                <tr>
-                    <td>${h.title}</td>
-                    <td>${h.author}</td>
-                    <td>${h.duration || 'N/A'}</td>
-                    <td><a href="${h.origLink}" target="_blank">Link</a></td>
-                    <td><a href="${h.mediaLink}" target="_blank">.m4a Link</a></td>
-                    <td>${h.timestamp}</td>
                 </tr>
             `).join('');
         }
 
-        function showToast(msg = "Đã lưu thành công!") {
+        function moveSecretTrack(index, dir) {
+            let tracks = getSecretTracks();
+            if (index + dir < 0 || index + dir >= tracks.length) return;
+            let temp = tracks[index];
+            tracks[index] = tracks[index + dir];
+            tracks[index + dir] = temp;
+            localStorage.setItem('singleSecretPlaylist', JSON.stringify(tracks));
+            renderSecretTracks();
+        }
+
+        function deleteSecretTrack(index) {
+            let tracks = getSecretTracks();
+            tracks.splice(index, 1);
+            localStorage.setItem('singleSecretPlaylist', JSON.stringify(tracks));
+            renderSecretTracks();
+        }
+
+        function saveSecretPlaylist() {
+            showToast("Đã save secret playlist!");
+        }
+
+        function loadSecretHistoryUI() {
+            const history = JSON.parse(localStorage.getItem('secretHistoryLog') || '[]');
+            document.querySelector('#secretHistoryTable tbody').innerHTML = history.map(h => `
+                <tr><td>${h.title}</td><td>${h.author}</td><td>${h.duration || 'N/A'}</td><td><a href="${h.origLink}" target="_blank">Link</a></td><td><a href="${h.mediaLink}" target="_blank">.m4a</a></td><td>${h.timestamp}</td></tr>
+            `).join('');
+        }
+
+        function showToast(msg) {
             const toast = document.getElementById('toast');
             toast.innerText = msg;
             toast.style.display = 'block';
@@ -497,22 +342,8 @@
 
         window.onload = () => {
             loadDefaultSettingsUI();
-
-            const normalList = getNormalPlaylists();
-            const normalKeys = Object.keys(normalList);
-            if(normalKeys.length > 0) {
-                currentNormalPlaylist = normalKeys[0];
-                document.getElementById('normalPlaylistInput').value = currentNormalPlaylist;
-                renderNormalTracks();
-            }
-
-            const secretList = getSecretPlaylists();
-            const secretKeys = Object.keys(secretList);
-            if(secretKeys.length > 0) {
-                currentSecretPlaylist = secretKeys[0];
-                document.getElementById('secretPlaylistInput').value = currentSecretPlaylist;
-                renderSecretTracks();
-            }
+            renderNormalTracks();
+            renderSecretTracks();
         };
     </script>
 </body>
