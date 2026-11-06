@@ -7,7 +7,7 @@ from groq import Groq
 app = Flask(__name__)
 CORS(app) # Cho phép gọi API trực tiếp không bị chặn CORS
 
-# Khởi tạo client Groq (Bro nhớ thay API Key thực tế vào đây hoặc dùng biến môi trường os.environ.get("GROQ_API_KEY"))
+# Khởi tạo client Groq
 client = Groq(api_key="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")
 
 @app.route('/extract', methods=['POST'])
@@ -42,15 +42,19 @@ def ai_metadata():
     url = data.get('url', '').strip()
     
     try:
+        # Sử dụng triple quotes """ để chuỗi multi-line an toàn, không bị lỗi cú pháp Python
+        prompt_content = f"""Hãy viết thông tin mô tả cho link audio/video này: {url}. 
+Với định dạng mẫu là:
+Artist: [Tên artist]
+Duration: [Thời lượng ước tính]
+Lyrics: [Một vài dòng lyrics đầu]
+Trả về đúng định dạng HTML gồm Artist, Duration, và một vài dòng Lyrics mẫu bằng thẻ <b>, <br>."""
+
         chat_completion = client.chat.completions.create(
             messages=[
                 {
                     "role": "user",
-                    "content": f"Hãy viết thông tin mô tả cho link audio/video này: {url}. Với định dạng mẫu là
-                    Artist: [Tên artist]
-                    Duration: [Link youtube này có thời lượng là bao nhiêu]
-                    Lyrics: [Một vài dòng lyrics đầu]
-                    Trả về đúng định dạng HTML gồm Artist, Duration, và một vài dòng Lyrics mẫu bằng thẻ <b>, <br>.",
+                    "content": prompt_content,
                 }
             ],
             model="llama-3.3-70b-versatile",
