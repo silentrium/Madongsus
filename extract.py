@@ -3,6 +3,31 @@ from flask_cors import CORS
 import requests
 import re
 import os
+from groq import Groq
+
+# Khởi tạo client Groq (lấy API Key miễn phí tại console.groq.com)
+client = Groq(api_key="BỎ_API_KEY_CỦA_BRO_VÀO_ĐÂY")
+
+@app.route('/ai-metadata', methods=['POST'])
+def ai_metadata():
+    data = request.json or {}
+    url = data.get('url', '').strip()
+    
+    try:
+        # Gọi AI thật để nó viết description theo đúng chuẩn HTML yêu cầu
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Hãy viết thông tin mô tả cho link audio/video này: {url}. Trả về đúng định dạng HTML gồm Artist, Duration, và một vài dòng Lyrics/Description mẫu bằng thẻ <b>, <br>.",
+                }
+            ],
+            model="llama-3.3-70b-versatile",
+        )
+        ai_text = chat_completion.choices[0].message.content
+        return jsonify({"success": True, "title": "AI Generated Track", "desc": ai_text})
+    except Exception as e:
+        return jsonify({"success": False, "desc": "<b>Artist:</b> Unknown<br><b>Duration:</b> 03:00"})
 
 app = Flask(__name__)
 CORS(app) # Cho phép HTML gọi API trực tiếp không bị chặn CORS
