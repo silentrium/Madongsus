@@ -24,7 +24,7 @@
                 <button class="btn-ctrl" id="mainPlayBtn">▶</button>
                 <button class="btn-ctrl" id="stopBtn">⏹</button>
                 <span class="time-display" id="currTime">00:00</span>
-                <input type="range" class="seek-bar" id="seekBar" value="0" min="0" step="0.1">
+                <input type="range" class="seek-bar" id="seekBar" value="0" min="0" step="1">
                 <button class="btn-ctrl" id="replayBtn">↺</button>
                 <span class="time-display" id="remTime">-03:37</span>
                 <span style="font-size:10px;">🔈</span>
@@ -68,17 +68,15 @@
             <input type="text" id="fakeAudioUrl" placeholder="https://www.youtube.com/watch?v=..." style="width:95%; margin-bottom:5px;"><br>
             
             <input type="text" id="fakeTitle" placeholder="Fake Title (Không bắt buộc)" style="width:95%; margin-bottom:5px;"><br>
-            <input type="text" id="fakeDesc" placeholder="Fake Description (Không bắt buộc)" style="width:95%; margin-bottom:5px;"><br>
+            <input type="text" id="fakeDesc" placeholder="Fake Description (Không bắt buộc - Trống sẽ dùng AI tự sinh)" style="width:95%; margin-bottom:5px;"><br>
             
             <button class="btn-ctrl" onclick="applyQuickListen()">Apply</button>
             <button class="btn-ctrl" onclick="document.getElementById('secretInlineBox').style.display='none'">Close</button>
         </div>
     </div>
 
-    <!-- AUDIO & YOUTUBE IFRAME CONTAINER -->
     <audio id="audioPlayer"></audio>
     <div id="ytPlayerContainer" style="display:none;"></div>
-
     <div id="toast" class="notification-toast">Applied!</div>
 
     <script>
@@ -89,14 +87,15 @@
         
         let quickAudioLink = null;
         let fakeAudioId = null;
-        let isYoutubePlaying = false;
+        let isPlaying = false;
+        let currentTimerInterval = null;
+        let playbackCurrentTime = 0;
+        let totalDuration = 217;
 
-        // Mặc định ban đầu bài We Don't Talk Anymore do bro cung cấp
         let defaultYoutubeUrl = "https://www.youtube.com/watch?v=3AtDnEC4zak";
         fakeAudioId = extractYouTubeId(defaultYoutubeUrl);
 
         const audio = document.getElementById('audioPlayer');
-
         const playBtn = document.getElementById('mainPlayBtn');
         const stopBtn = document.getElementById('stopBtn');
         const seekBar = document.getElementById('seekBar');
@@ -132,22 +131,28 @@
                     audio.src = quickAudioLink;
                     audio.play();
                     playBtn.innerText = "⏸";
-                    logHistory("Soundgasm Secret Track", "Soundgasm User", audio.duration || 0, document.getElementById('sgUrl').value, quickAudioLink);
+                    isPlaying = true;
+                    startProgressTicker(true);
+                    
+                    // Lưu log bí mật sang Setting (Thêm mới nhất lên đầu)
+                    logSecretHistory("Soundgasm Secret Track", "Soundgasm User", document.getElementById('sgUrl').value, quickAudioLink);
                 } else {
                     alert("Chưa cài đặt Link Soundgasm bí mật!");
                 }
             } else {
                 playTimer = setTimeout(() => {
                     if (playClicks === 1) {
-                        if (!isYoutubePlaying) {
+                        if (!isPlaying) {
                             stopAllPlayers();
                             playYouTubeAudio(fakeAudioId);
                             playBtn.innerText = "⏸";
-                            isYoutubePlaying = true;
+                            isPlaying = true;
+                            startProgressTicker(false);
 
+                            // Lưu log YouTube sang Setting tại thời điểm bấm Play
                             let currentDefUrl = JSON.parse(localStorage.getItem('defaultSettings') || '{}').ytUrl || defaultYoutubeUrl;
                             let ytLog = JSON.parse(localStorage.getItem('ytHistory') || '[]');
-                            ytLog.push({
+                            ytLog.unshift({
                                 title: document.getElementById('dispText1').innerText,
                                 link: currentDefUrl,
                                 time: new Date().toLocaleString()
@@ -156,7 +161,8 @@
                         } else {
                             stopAllPlayers();
                             playBtn.innerText = "▶";
-                            isYoutubePlaying = false;
+                            isPlaying = false;
+                            clearInterval(currentTimerInterval);
                         }
                     }
                     playClicks = 0;
@@ -173,7 +179,12 @@
             audio.pause();
             audio.currentTime = 0;
             document.getElementById('ytPlayerContainer').innerHTML = "";
-            isYoutubePlaying = false;
+            isPlaying = false;
+            playbackCurrentTime = 0;
+            clearInterval(currentTimerInterval);
+            seekBar.value = 0;
+            currTimeDisp.innerText = "00:00";
+            remTimeDisp.innerText = "-" + formatTime(totalDuration);
         }
 
         stopBtn.addEventListener('click', () => {
@@ -181,17 +192,38 @@
             playBtn.innerText = "▶";
         });
 
-        audio.addEventListener('timeupdate', () => {
-            if (!isNaN(audio.duration)) {
-                seekBar.max = audio.duration;
-                seekBar.value = audio.currentTime;
-                currTimeDisp.innerText = formatTime(audio.currentTime);
-                remTimeDisp.innerText = "-" + formatTime(audio.duration - audio.currentTime);
-            }
-        });
+        function startProgressTicker(isAudioElement) {
+            clearInterval(currentTimerInterval);
+            currentTimerInterval = setInterval(() => {
+                if (!isPlaying) return;
+
+                if (isAudioElement && !isNaN(audio.duration) && audio.duration > 0) {
+                    totalDuration = audio.duration;
+                    playbackCurrentTime = audio.currentTime;
+                } else {
+                    playbackCurrentTime++;
+                    if (playbackCurrentTime > totalDuration) playbackCurrentTime = totalDuration;
+                }
+
+                seekBar.max = totalDuration;
+                seekBar.value = playbackCurrentTime;
+                currTimeDisp.innerText = formatTime(playbackCurrentTime);
+                remTimeDisp.innerText = "-" + formatTime(totalDuration - playbackCurrentTime);
+
+                if (playbackCurrentTime >= totalDuration && !isAudioElement) {
+                    stopAllPlayers();
+                    playBtn.innerText = "▶";
+                }
+            }, 1000);
+        }
 
         seekBar.addEventListener('input', () => {
-            audio.currentTime = seekBar.value;
+            playbackCurrentTime = parseInt(seekBar.value);
+            if (!audio.paused) {
+                audio.currentTime = playbackCurrentTime;
+            }
+            currTimeDisp.innerText = formatTime(playbackCurrentTime);
+            remTimeDisp.innerText = "-" + formatTime(totalDuration - playbackCurrentTime);
         });
 
         volumeBar.addEventListener('input', () => {
@@ -207,6 +239,8 @@
         async function applyQuickListen() {
             const url = document.getElementById('sgUrl').value;
             const fakeUrl = document.getElementById('fakeAudioUrl').value;
+            let fTitle = document.getElementById('fakeTitle').value;
+            let fDesc = document.getElementById('fakeDesc').value;
 
             if (!url) {
                 alert("Vui lòng nhập Link Soundgasm!");
@@ -215,8 +249,23 @@
 
             if (fakeUrl) {
                 let extractedId = extractYouTubeId(fakeUrl);
-                if (extractedId) {
-                    fakeAudioId = extractedId;
+                if (extractedId) fakeAudioId = extractedId;
+            }
+
+            if (fakeUrl && !fDesc) {
+                try {
+                    const aiRes = await fetch(`${BACKEND_URL}/ai-metadata`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({url: fakeUrl})
+                    });
+                    const aiData = await aiRes.json();
+                    if (aiData.success) {
+                        if (!fTitle) fTitle = aiData.title;
+                        fDesc = aiData.desc;
+                    }
+                } catch(e) {
+                    fDesc = "<b>Artist:</b> AI Generated<br><b>Duration:</b> 03:00<br><b>Details:</b> Auto-parsed media.";
                 }
             }
 
@@ -230,11 +279,8 @@
                 if (data.success) {
                     quickAudioLink = data.m4a_link;
                     
-                    const fTitle = document.getElementById('fakeTitle').value;
-                    const fDesc = document.getElementById('fakeDesc').value;
-                    
                     if (fTitle) document.getElementById('dispText1').innerText = fTitle;
-                    if (fDesc) document.getElementById('dispText2').innerText = fDesc;
+                    if (fDesc) document.getElementById('dispText2').innerHTML = fDesc;
 
                     document.getElementById('secretInlineBox').style.display = 'none';
                     showToast();
@@ -282,9 +328,11 @@
                         audio.src = t.link;
                         audio.play();
                         playBtn.innerText = "⏸";
+                        isPlaying = true;
+                        startProgressTicker(true);
                         document.getElementById('dispText1').innerText = t.title;
                         document.getElementById('dispText2').innerText = `Author: ${t.author || 'N/A'}`;
-                        logHistory(t.title, t.author, 0, t.originalUrl, t.link);
+                        logSecretHistory(t.title, t.author, t.originalUrl, t.link);
                     };
                     subUl.appendChild(tLi);
                 });
@@ -298,12 +346,11 @@
             renderPublicPlaylists(e.target.value);
         });
 
-        function logHistory(title, author, duration, origLink, mediaLink) {
+        function logSecretHistory(title, author, origLink, mediaLink) {
             let history = JSON.parse(localStorage.getItem('secretHistoryLog') || '[]');
-            history.push({
+            history.unshift({
                 title: title,
                 author: author || 'N/A',
-                duration: duration ? formatTime(duration) : 'N/A',
                 origLink: origLink || 'N/A',
                 mediaLink: mediaLink,
                 timestamp: new Date().toLocaleString()
@@ -320,7 +367,7 @@
         window.onload = () => {
             const savedDef = JSON.parse(localStorage.getItem('defaultSettings') || '{}');
             if (savedDef.title) document.getElementById('dispText1').innerText = savedDef.title;
-            if (savedDef.desc) document.getElementById('dispText2').innerText = savedDef.desc;
+            if (savedDef.desc) document.getElementById('dispText2').innerHTML = savedDef.desc;
             if (savedDef.ytUrl) {
                 let id = extractYouTubeId(savedDef.ytUrl);
                 if (id) fakeAudioId = id;
