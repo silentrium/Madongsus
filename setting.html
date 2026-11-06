@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Madongsus Setting</title>
+    <title>Soundgasm Setting</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -23,12 +23,17 @@
             <h3>Default Setting</h3>
             <label>Text 1 (Default Title):</label><br>
             <input type="text" id="defText1" style="width:90%;"><br><br>
+            
             <label>Text 2 (Default Description):</label><br>
-            <textarea id="defText2" style="width:90%; height:60px;"></textarea><br><br>
+            <textarea id="defText2" style="width:90%; height:50px;"></textarea><br><br>
+
+            <label>Default YouTube / Fake Audio Link:</label><br>
+            <input type="text" id="defYoutubeUrl" placeholder="https://www.youtube.com/watch?v=..." style="width:90%;"><br><br>
+
             <button class="btn-ctrl" id="saveDefBtn" onclick="saveDefaultSettings()">Save Default</button>
 
             <h4>YouTube / Normal History Log</h4>
-            <div class="playlist-scroll" style="height:120px;">
+            <div class="playlist-scroll" style="height:100px;">
                 <table class="history-table" id="ytHistoryTable">
                     <thead>
                         <tr><th>Title</th><th>Link</th><th>Time</th></tr>
@@ -54,7 +59,7 @@
             <div class="playlist-scroll" id="settingTrackList"></div>
             
             <h4>Secret Audio History Log (.txt Format)</h4>
-            <div class="playlist-scroll" style="height:110px;">
+            <div class="playlist-scroll" style="height:90px;">
                 <table class="history-table" id="secretHistoryTable">
                     <thead>
                         <tr><th>Title</th><th>Author</th><th>Time</th><th>Media Link</th></tr>
@@ -68,7 +73,6 @@
     <div id="toast" class="notification-toast">Đã lưu thành công!</div>
 
     <script>
-        // FIX: Đường dẫn tương đối cho API Backend
         const BACKEND_URL = "";
         let musicClicks = 0, musicTimer;
         let selectedPlaylistIndex = 0;
@@ -76,7 +80,9 @@
         function saveDefaultSettings() {
             const title = document.getElementById('defText1').value;
             const desc = document.getElementById('defText2').value;
-            localStorage.setItem('defaultSettings', JSON.stringify({title, desc}));
+            const ytUrl = document.getElementById('defYoutubeUrl').value.trim();
+
+            localStorage.setItem('defaultSettings', JSON.stringify({title, desc, ytUrl}));
             showToast();
         }
 
@@ -84,6 +90,7 @@
             const savedDef = JSON.parse(localStorage.getItem('defaultSettings') || '{}');
             if (savedDef.title) document.getElementById('defText1').value = savedDef.title;
             if (savedDef.desc) document.getElementById('defText2').value = savedDef.desc;
+            if (savedDef.ytUrl) document.getElementById('defYoutubeUrl').value = savedDef.ytUrl;
 
             const ytHistory = JSON.parse(localStorage.getItem('ytHistory') || '[]');
             const tbody = document.querySelector('#ytHistoryTable tbody');
