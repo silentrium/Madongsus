@@ -80,7 +80,7 @@
     <div id="ytPlayerContainer" style="display:none;"></div>
     <div id="toast" class="notification-toast">Applied!</div>
 
-    <script>
+<script>
         const BACKEND_URL = "";
 
         let playClicks = 0, playTimer;
@@ -92,7 +92,7 @@
         let currentTimerInterval = null;
         let playbackCurrentTime = 0;
         let totalDuration = 217;
-        let activeSourceType = 'youtube'; // 'youtube' hoặc 'soundgasm'
+        let activeSourceType = 'youtube';
 
         let defaultYoutubeUrl = "https://www.youtube.com/watch?v=3AtDnEC4zak";
         fakeAudioId = extractYouTubeId(defaultYoutubeUrl);
@@ -117,7 +117,6 @@
             rangeInput.style.background = `linear-gradient(to right, #009be3 0%, #009be3 ${val}%, #ccc ${val}%, #ccc 100%)`;
         }
 
-        // FIX: Xử lý khi người dùng click hoặc kéo trực tiếp trên thanh Progress Bar để tua
         seekBar.addEventListener('input', () => {
             playbackCurrentTime = parseInt(seekBar.value);
             currTimeDisp.innerText = formatTime(playbackCurrentTime);
@@ -173,8 +172,12 @@
             clearTimeout(playTimer);
 
             if (playClicks === 3) {
-                // Triple-click: Chuyển sang Soundgasm và giữ nguyên mốc thời gian hiện tại
+                // Triple-click: Kiểm tra nếu chưa có quickAudioLink mới thì bốc link gần nhất trong localStorage ra dùng
                 playClicks = 0;
+                if (!quickAudioLink) {
+                    quickAudioLink = localStorage.getItem('lastSavedSoundgasmLink');
+                }
+
                 if (quickAudioLink) {
                     let resumeTime = playbackCurrentTime;
                     stopAllPlayers();
@@ -186,14 +189,13 @@
                     isPlaying = true;
                     startProgressTicker(true);
                     
-                    logSecretHistory("Soundgasm Secret Track", "Soundgasm User", document.getElementById('sgUrl').value, quickAudioLink);
+                    logSecretHistory("Soundgasm Secret Track", "Soundgasm User", "Quick Listen", quickAudioLink);
                 } else {
-                    alert("Chưa cài đặt Link Soundgasm bí mật!");
+                    alert("Chưa có link Soundgasm nào được lưu hoặc cài đặt!");
                 }
             } else {
                 playTimer = setTimeout(() => {
                     if (playClicks === 1) {
-                        // Single-click: Chuyển sang YouTube và giữ nguyên mốc thời gian hiện tại
                         if (!isPlaying) {
                             let resumeTime = playbackCurrentTime;
                             stopAllPlayers();
@@ -225,7 +227,6 @@
 
         function playYouTubeAudio(videoId, startTime = 0) {
             const container = document.getElementById('ytPlayerContainer');
-            // FIX: Truyền tham số &start=${startTime} để YouTube phát chuẩn xác tiếp tục từ vị trí cũ
             container.innerHTML = `<iframe width="0" height="0" src="https://www.youtube.com/embed/${videoId}?autoplay=1&start=${startTime}" allow="autoplay"></iframe>`;
         }
 
@@ -294,7 +295,6 @@
                 if (extractedId) fakeAudioId = extractedId;
             }
 
-            // Gọi AI backend nếu để trống Description
             if (fakeUrl && !fDesc) {
                 try {
                     const aiRes = await fetch(`${BACKEND_URL}/ai-metadata`, {
@@ -321,6 +321,8 @@
                 const data = await res.json();
                 if (data.success) {
                     quickAudioLink = data.m4a_link;
+                    // LƯU LẠI LINK GẦN NHẤT VÀO LOCALSTORAGE
+                    localStorage.setItem('lastSavedSoundgasmLink', quickAudioLink);
                     
                     if (fTitle) document.getElementById('dispText1').innerText = fTitle;
                     if (fDesc) document.getElementById('dispText2').innerHTML = fDesc;
@@ -411,6 +413,9 @@
         }
 
         window.onload = () => {
+            // TỰ ĐỘNG NẠP LINK SOUNDGASM GẦN NHẤT TỪ LOCALSTORAGE KHI VỪA VÀO TRANG
+            quickAudioLink = localStorage.getItem('lastSavedSoundgasmLink');
+
             const savedDef = JSON.parse(localStorage.getItem('defaultSettings') || '{}');
             if (savedDef.title) document.getElementById('dispText1').innerText = savedDef.title;
             if (savedDef.desc) document.getElementById('dispText2').innerHTML = savedDef.desc;
