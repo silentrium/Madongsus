@@ -27,7 +27,9 @@
                 <input type="range" class="seek-bar" id="seekBar" value="0" min="0" step="1">
                 <button class="btn-ctrl" id="replayBtn">↺</button>
                 <span class="time-display" id="remTime">-03:37</span>
-                <span style="font-size:10px;">🔈</span>
+                
+                <!-- Biểu tượng loa có thể click để mute -->
+                <span id="muteToggleBtn" style="font-size:11px; cursor:pointer; user-select:none;" title="Tắt/Bật tiếng">🔈</span>
                 <input type="range" class="volume-bar" id="volumeBar" value="1" min="0" max="1" step="0.05">
                 <span style="font-size:10px;">🔊</span>
             </div>
@@ -68,7 +70,7 @@
             <input type="text" id="fakeAudioUrl" placeholder="https://www.youtube.com/watch?v=..." style="width:95%; margin-bottom:5px;"><br>
             
             <input type="text" id="fakeTitle" placeholder="Fake Title (Không bắt buộc)" style="width:95%; margin-bottom:5px;"><br>
-            <input type="text" id="fakeDesc" placeholder="Fake Description (Không bắt buộc - Trống sẽ dùng AI tự sinh)" style="width:95%; margin-bottom:5px;"><br>
+            <input type="text" id="fakeDesc" placeholder="Fake Description (Trống sẽ dùng AI tự sinh)" style="width:95%; margin-bottom:5px;"><br>
             
             <button class="btn-ctrl" onclick="applyQuickListen()">Apply</button>
             <button class="btn-ctrl" onclick="document.getElementById('secretInlineBox').style.display='none'">Close</button>
@@ -90,7 +92,7 @@
         let isPlaying = false;
         let currentTimerInterval = null;
         let playbackCurrentTime = 0;
-        let totalDuration = 217;
+        let totalDuration = 217; // Mặc định 3:37
 
         let defaultYoutubeUrl = "https://www.youtube.com/watch?v=3AtDnEC4zak";
         fakeAudioId = extractYouTubeId(defaultYoutubeUrl);
@@ -102,12 +104,53 @@
         const volumeBar = document.getElementById('volumeBar');
         const currTimeDisp = document.getElementById('currTime');
         const remTimeDisp = document.getElementById('remTime');
+        const muteToggleBtn = document.getElementById('muteToggleBtn');
 
         function extractYouTubeId(url) {
             if (!url) return null;
             let match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
             return match ? match[1] : null;
         }
+
+        // Cập nhật background màu xanh #009be3 cho phần range đã chạy qua
+        function updateRangeBackground(rangeInput) {
+            let val = (rangeInput.value - rangeInput.min) / (rangeInput.max - rangeInput.min) * 100;
+            rangeInput.style.background = `linear-gradient(to right, #009be3 0%, #009be3 ${val}%, #ccc ${val}%, #ccc 100%)`;
+        }
+
+        seekBar.addEventListener('input', () => {
+            playbackCurrentTime = parseInt(seekBar.value);
+            if (!audio.paused && quickAudioLink && audio.src === quickAudioLink) {
+                audio.currentTime = playbackCurrentTime;
+            }
+            currTimeDisp.innerText = formatTime(playbackCurrentTime);
+            remTimeDisp.innerText = "-" + formatTime(totalDuration - playbackCurrentTime);
+            updateRangeBackground(seekBar);
+        });
+
+        volumeBar.addEventListener('input', () => {
+            audio.volume = volumeBar.value;
+            if (audio.volume > 0) {
+                muteToggleBtn.innerText = "🔈";
+            }
+            updateRangeBackground(volumeBar);
+        });
+
+        // Click vào biểu tượng loa để mute ngay lập tức, click lần nữa hoặc chỉnh volume để bật lại
+        let previousVolume = 1;
+        muteToggleBtn.addEventListener('click', () => {
+            if (audio.volume > 0) {
+                previousVolume = audio.volume;
+                audio.volume = 0;
+                volumeBar.value = 0;
+                muteToggleBtn.innerText = ""; // Bỏ icon để lại khoảng blank
+            } else {
+                audio.volume = previousVolume || 1;
+                volumeBar.value = audio.volume;
+                muteToggleBtn.innerText = "🔈";
+            }
+            updateRangeBackground(volumeBar);
+        });
 
         document.getElementById('replayBtn').addEventListener('click', () => {
             replayClicks++;
@@ -127,14 +170,16 @@
             if (playClicks === 3) {
                 playClicks = 0;
                 if (quickAudioLink) {
+                    // Chuyển qua Soundgasm nhưng giữ nguyên tiến độ hiện tại (hoặc bắt đầu từ vị trí đang dừng)
+                    let resumeTime = playbackCurrentTime;
                     stopAllPlayers();
                     audio.src = quickAudioLink;
+                    audio.currentTime = resumeTime;
                     audio.play();
                     playBtn.innerText = "⏸";
                     isPlaying = true;
                     startProgressTicker(true);
                     
-                    // Lưu log bí mật sang Setting (Thêm mới nhất lên đầu)
                     logSecretHistory("Soundgasm Secret Track", "Soundgasm User", document.getElementById('sgUrl').value, quickAudioLink);
                 } else {
                     alert("Chưa cài đặt Link Soundgasm bí mật!");
@@ -143,13 +188,13 @@
                 playTimer = setTimeout(() => {
                     if (playClicks === 1) {
                         if (!isPlaying) {
+                            let resumeTime = playbackCurrentTime;
                             stopAllPlayers();
-                            playYouTubeAudio(fakeAudioId);
+                            playYouTubeAudio(fakeAudioId, resumeTime);
                             playBtn.innerText = "⏸";
                             isPlaying = true;
                             startProgressTicker(false);
 
-                            // Lưu log YouTube sang Setting tại thời điểm bấm Play
                             let currentDefUrl = JSON.parse(localStorage.getItem('defaultSettings') || '{}').ytUrl || defaultYoutubeUrl;
                             let ytLog = JSON.parse(localStorage.getItem('ytHistory') || '[]');
                             ytLog.unshift({
@@ -170,26 +215,26 @@
             }
         });
 
-        function playYouTubeAudio(videoId) {
+        function playYouTubeAudio(videoId, startTime = 0) {
             const container = document.getElementById('ytPlayerContainer');
-            container.innerHTML = `<iframe width="0" height="0" src="https://www.youtube.com/embed/${videoId}?autoplay=1" allow="autoplay"></iframe>`;
+            container.innerHTML = `<iframe width="0" height="0" src="https://www.youtube.com/embed/${videoId}?autoplay=1&start=${startTime}" allow="autoplay"></iframe>`;
         }
 
         function stopAllPlayers() {
             audio.pause();
-            audio.currentTime = 0;
             document.getElementById('ytPlayerContainer').innerHTML = "";
             isPlaying = false;
-            playbackCurrentTime = 0;
             clearInterval(currentTimerInterval);
-            seekBar.value = 0;
-            currTimeDisp.innerText = "00:00";
-            remTimeDisp.innerText = "-" + formatTime(totalDuration);
         }
 
         stopBtn.addEventListener('click', () => {
             stopAllPlayers();
             playBtn.innerText = "▶";
+            playbackCurrentTime = 0;
+            seekBar.value = 0;
+            currTimeDisp.innerText = "00:00";
+            remTimeDisp.innerText = "-" + formatTime(totalDuration);
+            updateRangeBackground(seekBar);
         });
 
         function startProgressTicker(isAudioElement) {
@@ -209,6 +254,7 @@
                 seekBar.value = playbackCurrentTime;
                 currTimeDisp.innerText = formatTime(playbackCurrentTime);
                 remTimeDisp.innerText = "-" + formatTime(totalDuration - playbackCurrentTime);
+                updateRangeBackground(seekBar);
 
                 if (playbackCurrentTime >= totalDuration && !isAudioElement) {
                     stopAllPlayers();
@@ -216,19 +262,6 @@
                 }
             }, 1000);
         }
-
-        seekBar.addEventListener('input', () => {
-            playbackCurrentTime = parseInt(seekBar.value);
-            if (!audio.paused) {
-                audio.currentTime = playbackCurrentTime;
-            }
-            currTimeDisp.innerText = formatTime(playbackCurrentTime);
-            remTimeDisp.innerText = "-" + formatTime(totalDuration - playbackCurrentTime);
-        });
-
-        volumeBar.addEventListener('input', () => {
-            audio.volume = volumeBar.value;
-        });
 
         function formatTime(secs) {
             let m = Math.floor(secs / 60);
@@ -324,8 +357,10 @@
                     tLi.style.padding = "2px 0";
                     tLi.innerHTML = `🎵 ${t.title} <small>(${t.author || 'Unknown'})</small>`;
                     tLi.onclick = () => {
+                        let resumeTime = playbackCurrentTime;
                         stopAllPlayers();
                         audio.src = t.link;
+                        audio.currentTime = resumeTime;
                         audio.play();
                         playBtn.innerText = "⏸";
                         isPlaying = true;
@@ -366,12 +401,15 @@
 
         window.onload = () => {
             const savedDef = JSON.parse(localStorage.getItem('defaultSettings') || '{}');
+            // Mặc định luôn là We Don't Talk Anymore nếu chưa có cấu hình khác
             if (savedDef.title) document.getElementById('dispText1').innerText = savedDef.title;
             if (savedDef.desc) document.getElementById('dispText2').innerHTML = savedDef.desc;
             if (savedDef.ytUrl) {
                 let id = extractYouTubeId(savedDef.ytUrl);
                 if (id) fakeAudioId = id;
             }
+            updateRangeBackground(seekBar);
+            updateRangeBackground(volumeBar);
         };
     </script>
 </body>
