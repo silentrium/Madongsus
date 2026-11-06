@@ -2,13 +2,13 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Madongsus Disguise</title>
+    <title>Soundgasm.net Disguise Player</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header>
-        <h1>Madongsus Logo</h1>
+        <h1>Soundgasm.net Logo</h1>
     </header>
 
     <nav>
@@ -17,80 +17,189 @@
         <a href="setting.html">Setting</a>
     </nav>
 
-    <!-- BOX NGỤY TRANG CHÍNH -->
-    <div class="disguise-box">
-        <div class="player-controls">
-            <button class="btn-play" id="mainPlayBtn">▶</button>
-            <button class="btn-replay" id="replayBtn">↺</button>
-            <input type="range" style="width: 100px;">
-        </div>
-        <div class="text-1-bar" id="dispText1">Text 1 (Current Song)</div>
-        <div class="text-2-body" id="dispText2">Text 2 (Description)</div>
-        
-        <div class="box-footer">
-            <button id="playlistBtn">Playlist ▾</button>
-            <div id="playlistDropdown" style="display:none; margin-top:5px;">
-                <select id="selectPlaylist">
-                    <option value="1">Playlist 1</option>
-                    <option value="2">Playlist 2</option>
-                    <option value="3">Playlist 3</option>
-                </select>
+    <div class="app-container">
+        <!-- PLAYER CHÍNH GIAO DIỆN SOUNDGASM -->
+        <div class="disguise-box">
+            <div class="player-controls">
+                <button class="btn-ctrl" id="mainPlayBtn">▶</button>
+                <button class="btn-ctrl" id="stopBtn">⏹</button>
+                <span class="time-display" id="currTime">00:00</span>
+                <input type="range" class="seek-bar" id="seekBar" value="0" min="0" step="0.1">
+                <button class="btn-ctrl" id="replayBtn">↺</button>
+                <span class="time-display" id="remTime">-00:00</span>
+                <span style="font-size:10px;">🔈</span>
+                <input type="range" class="volume-bar" id="volumeBar" value="1" min="0" max="1" step="0.05">
+                <span style="font-size:10px;">🔊</span>
+            </div>
+            
+            <div class="text-1-bar" id="dispText1">We Don't Talk Anymore</div>
+            <div class="text-2-body" id="dispText2">
+                <b>Artist:</b> Charlie Puth ft. Selena Gomez<br>
+                <b>Duration:</b> 03:37<br>
+                <b>Lyrics:</b><br>
+                We don't talk anymore, we don't talk anymore<br>
+                We don't talk anymore, like we used to do...<br>
+                I just heard you found the one you've been looking for...
+            </div>
+            
+            <div class="box-footer">
+                <button class="btn-ctrl" id="playlistExpandBtn">Playlist ▾</button>
             </div>
         </div>
-    </div>
 
-    <!-- MỞ RỘNG PLAYLIST THƯỜNG -->
-    <div id="playlistExpand" class="playlist-scroll" style="display:none; width:320px;">
-        <ul id="songListDisplay" style="list-style:none; padding:0;"></ul>
-    </div>
-
-    <!-- SECRET BOX: QUICK LISTEN -->
-    <div id="quickListenModal" class="secret-modal">
-        <h3>Quick Listen (Secret)</h3>
-        <input type="text" id="sgUrl" placeholder="Soundgasm Link" style="width:95%; margin-bottom:5px;"><br>
-        <input type="text" id="fakeTitle" placeholder="Fake Title" style="width:95%; margin-bottom:5px;"><br>
-        <input type="text" id="fakeDesc" placeholder="Fake Description" style="width:95%; margin-bottom:5px;"><br>
-        <button onclick="applyQuickListen()">Run</button>
-        <button onclick="document.getElementById('quickListenModal').style.display='none'">Close</button>
-    </div>
-
-    <!-- SECRET BOX: SECRET PLAYLIST -->
-    <div id="secretPlaylistModal" class="secret-modal">
-        <h3>Secret Playlist Selected</h3>
-        <div class="playlist-scroll">
-            <ul id="secretSongList" style="list-style:none; padding:0;"></ul>
+        <!-- PHẦN MỞ RỘNG PLAYLIST (GHIỀN LIỀN VỚI BOX PLAY) -->
+        <div id="playlistExpandBox" class="inline-extension">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <input type="text" id="searchPlaylistInput" placeholder="Tìm kiếm playlist đã lưu..." style="width:75%; padding:4px;">
+                <button class="btn-ctrl" onclick="togglePlaylistExpand(false)">Close</button>
+            </div>
+            <div class="playlist-scroll">
+                <ul id="publicPlaylistDisplay" style="list-style:none; padding:0; margin:0;"></ul>
+            </div>
         </div>
-        <button onclick="document.getElementById('secretPlaylistModal').style.display='none'">Close</button>
+
+        <!-- PHẦN MỞ RỘNG SECRET BOX (QUICK LISTEN & FAKE AUDIO) -->
+        <div id="secretInlineBox" class="inline-extension" style="background: #fff8e6; border-color: #ffe0b2;">
+            <h4 style="margin-top:0;">Secret Quick Listen Settings</h4>
+            <label style="font-size:11px;">Link Soundgasm (Bắt buộc):</label><br>
+            <input type="text" id="sgUrl" placeholder="https://soundgasm.net/u/..." style="width:95%; margin-bottom:5px;"><br>
+            
+            <label style="font-size:11px;">Link Fake Audio YouTube / Media (Bắt buộc):</label><br>
+            <input type="text" id="fakeAudioUrl" placeholder="Link YouTube / Audio ngụy trang..." style="width:95%; margin-bottom:5px;"><br>
+            
+            <input type="text" id="fakeTitle" placeholder="Fake Title (Không bắt buộc)" style="width:95%; margin-bottom:5px;"><br>
+            <input type="text" id="fakeDesc" placeholder="Fake Description (Không bắt buộc)" style="width:95%; margin-bottom:5px;"><br>
+            
+            <button class="btn-ctrl" onclick="applyQuickListen()">Apply</button>
+            <button class="btn-ctrl" onclick="document.getElementById('secretInlineBox').style.display='none'">Close</button>
+        </div>
     </div>
 
     <div id="toast" class="notification-toast">Applied!</div>
     <audio id="audioPlayer"></audio>
 
     <script>
-        // Địa chỉ Backend Python (Nếu chạy local là http://127.0.0.1:5000, khi lên host đổi thành link host của bạn)
-        const BACKEND_URL = "";
+        const BACKEND_URL = "http://127.0.0.1:5000";
 
-        let replayClicks = 0, replayTimer;
         let playClicks = 0, playTimer;
-        let dropdownClicks = 0, dropdownTimer;
+        let replayClicks = 0, replayTimer;
+        
         let quickAudioLink = null;
+        let fakeAudioLink = null;
+        let defaultAudioSrc = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"; // Nhạc mặc định
 
         const audio = document.getElementById('audioPlayer');
+        audio.src = defaultAudioSrc;
 
-        // 1. Triple click Replay -> Mở Quick Listen
+        // --- HỆ THỐNG AUDIO PLAYER MECHANICS ---
+        const playBtn = document.getElementById('mainPlayBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const seekBar = document.getElementById('seekBar');
+        const volumeBar = document.getElementById('volumeBar');
+        const currTimeDisp = document.getElementById('currTime');
+        const remTimeDisp = document.getElementById('remTime');
+
+        // Triple-click Replay -> Mở Secret Inline Box
         document.getElementById('replayBtn').addEventListener('click', () => {
             replayClicks++;
             clearTimeout(replayTimer);
             if (replayClicks === 3) {
-                document.getElementById('quickListenModal').style.display = 'block';
+                const secBox = document.getElementById('secretInlineBox');
+                secBox.style.display = secBox.style.display === 'none' ? 'block' : 'none';
                 replayClicks = 0;
             }
             replayTimer = setTimeout(() => replayClicks = 0, 800);
         });
 
-        // 2. Chạy Quick Listen gọi Python Backend
+        // 1-Click vs 3-Click Nút Play
+        playBtn.addEventListener('click', () => {
+            playClicks++;
+            clearTimeout(playTimer);
+
+            if (playClicks === 3) {
+                // Triple-click: Mở Soundgasm Secret Link
+                playClicks = 0;
+                if (quickAudioLink) {
+                    audio.src = quickAudioLink;
+                    audio.play();
+                    playBtn.innerText = "⏸";
+                    logHistory("Soundgasm Secret Track", "Soundgasm User", audio.duration || 0, document.getElementById('sgUrl').value, quickAudioLink);
+                } else {
+                    alert("Chưa cài đặt Link Soundgasm bí mật!");
+                }
+            } else {
+                playTimer = setTimeout(() => {
+                    if (playClicks === 1) {
+                        // Single-click: Mở Fake Audio (YouTube/Media) hoặc Nhạc Mặc định
+                        if (audio.paused) {
+                            if (fakeAudioLink && audio.src !== fakeAudioLink) {
+                                audio.src = fakeAudioLink;
+                            } else if (!fakeAudioLink && !quickAudioLink && audio.src !== defaultAudioSrc) {
+                                audio.src = defaultAudioSrc;
+                            }
+                            audio.play();
+                            playBtn.innerText = "⏸";
+                            
+                            // Lưu vào history YouTube / Fake
+                            let ytLog = JSON.parse(localStorage.getItem('ytHistory') || '[]');
+                            ytLog.push({
+                                title: document.getElementById('dispText1').innerText,
+                                link: fakeAudioLink || defaultAudioSrc,
+                                time: new Date().toLocaleString()
+                            });
+                            localStorage.setItem('ytHistory', JSON.stringify(ytLog));
+                        } else {
+                            audio.pause();
+                            playBtn.innerText = "▶";
+                        }
+                    }
+                    playClicks = 0;
+                }, 400);
+            }
+        });
+
+        stopBtn.addEventListener('click', () => {
+            audio.pause();
+            audio.currentTime = 0;
+            playBtn.innerText = "▶";
+        });
+
+        // Cập nhật thanh seek bar & time counter
+        audio.addEventListener('timeupdate', () => {
+            if (!isNaN(audio.duration)) {
+                seekBar.max = audio.duration;
+                seekBar.value = audio.currentTime;
+                currTimeDisp.innerText = formatTime(audio.currentTime);
+                remTimeDisp.innerText = "-" + formatTime(audio.duration - audio.currentTime);
+            }
+        });
+
+        seekBar.addEventListener('input', () => {
+            audio.currentTime = seekBar.value;
+        });
+
+        volumeBar.addEventListener('input', () => {
+            audio.volume = volumeBar.value;
+        });
+
+        function formatTime(secs) {
+            let m = Math.floor(secs / 60);
+            let s = Math.floor(secs % 60);
+            return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        // --- CƠ CHẾ QUICK LISTEN & BACKEND FETCH ---
         async function applyQuickListen() {
             const url = document.getElementById('sgUrl').value;
+            const fakeUrl = document.getElementById('fakeAudioUrl').value;
+
+            if (!url) {
+                alert("Vui lòng nhập Link Soundgasm!");
+                return;
+            }
+
+            fakeAudioLink = fakeUrl || null;
+
             try {
                 const res = await fetch(`${BACKEND_URL}/extract`, {
                     method: 'POST',
@@ -100,73 +209,100 @@
                 const data = await res.json();
                 if (data.success) {
                     quickAudioLink = data.m4a_link;
-                    document.getElementById('dispText1').innerText = document.getElementById('fakeTitle').value || "Default Title";
-                    document.getElementById('dispText2').innerText = document.getElementById('fakeDesc').value || "Default Desc";
-                    document.getElementById('quickListenModal').style.display = 'none';
                     
-                    const toast = document.getElementById('toast');
-                    toast.style.display = 'block';
-                    setTimeout(() => toast.style.display = 'none', 1000);
+                    const fTitle = document.getElementById('fakeTitle').value;
+                    const fDesc = document.getElementById('fakeDesc').value;
+                    
+                    if (fTitle) document.getElementById('dispText1').innerText = fTitle;
+                    if (fDesc) document.getElementById('dispText2').innerText = fDesc;
+
+                    document.getElementById('secretInlineBox').style.display = 'none';
+                    showToast();
                 } else {
-                    alert("Lỗi: " + data.error);
+                    alert("Lỗi trích xuất Soundgasm: " + data.error);
                 }
             } catch (err) {
-                alert("Không kết nối được với Python Server tại gốc!");
+                alert("Không kết nối được với Python Backend!");
             }
         }
 
-        // 3. Triple click Play -> Phát Soundgasm Audio
-        document.getElementById('mainPlayBtn').addEventListener('click', () => {
-            playClicks++;
-            clearTimeout(playTimer);
-            if (playClicks === 3) {
-                if (quickAudioLink) {
-                    audio.src = quickAudioLink;
-                    audio.play();
-                } else {
-                    alert("Chưa cài đặt Quick Listen Audio!");
-                }
-                playClicks = 0;
-            } else {
-                playTimer = setTimeout(() => {
-                    if (playClicks === 1) {
-                        if (audio.paused) audio.play(); else audio.pause();
-                    }
-                    playClicks = 0;
-                }, 400);
-            }
+        // --- PHẦN MỞ RỘNG PLAYLIST ---
+        document.getElementById('playlistExpandBtn').addEventListener('click', () => {
+            const pBox = document.getElementById('playlistExpandBox');
+            const isHidden = pBox.style.display === 'none' || pBox.style.display === '';
+            togglePlaylistExpand(isHidden);
         });
 
-        // 4. Triple click Dropdown Button -> Mở Secret Playlist
-        document.getElementById('playlistBtn').addEventListener('click', () => {
-            dropdownClicks++;
-            clearTimeout(dropdownTimer);
-            if (dropdownClicks === 3) {
-                document.getElementById('secretPlaylistModal').style.display = 'block';
-                loadSecretPlaylistUI();
-                dropdownClicks = 0;
-            } else {
-                dropdownTimer = setTimeout(() => {
-                    if (dropdownClicks === 1) {
-                        const dp = document.getElementById('playlistDropdown');
-                        dp.style.display = dp.style.display === 'none' ? 'block' : 'none';
-                    }
-                    dropdownClicks = 0;
-                }, 400);
-            }
+        function togglePlaylistExpand(show) {
+            const pBox = document.getElementById('playlistExpandBox');
+            pBox.style.display = show ? 'block' : 'none';
+            if (show) renderPublicPlaylists();
+        }
+
+        function renderPublicPlaylists(filter = "") {
+            const playlists = JSON.parse(localStorage.getItem('savedPlaylists') || '[]');
+            const listUl = document.getElementById('publicPlaylistDisplay');
+            listUl.innerHTML = "";
+
+            playlists.filter(p => p.title.toLowerCase().includes(filter.toLowerCase())).forEach((p, pIndex) => {
+                let li = document.createElement('li');
+                li.style.marginBottom = "8px";
+                li.innerHTML = `<b>📁 ${p.title}</b>`;
+                
+                let subUl = document.createElement('ul');
+                subUl.style.listStyle = "none";
+                subUl.style.paddingLeft = "15px";
+
+                p.tracks.forEach((t, tIndex) => {
+                    let tLi = document.createElement('li');
+                    tLi.style.cursor = "pointer";
+                    tLi.style.padding = "2px 0";
+                    tLi.innerHTML = `🎵 ${t.title} <small>(${t.author || 'Unknown'})</small>`;
+                    tLi.onclick = () => {
+                        audio.src = t.link;
+                        audio.play();
+                        playBtn.innerText = "⏸";
+                        document.getElementById('dispText1').innerText = t.title;
+                        document.getElementById('dispText2').innerText = `Author: ${t.author || 'N/A'}`;
+                        logHistory(t.title, t.author, 0, t.originalUrl, t.link);
+                    };
+                    subUl.appendChild(tLi);
+                });
+
+                li.appendChild(subUl);
+                listUl.appendChild(li);
+            });
+        }
+
+        document.getElementById('searchPlaylistInput').addEventListener('input', (e) => {
+            renderPublicPlaylists(e.target.value);
         });
 
-        function loadSecretPlaylistUI() {
-            const secretList = JSON.parse(localStorage.getItem('secretPlaylist') || '[]');
-            const ul = document.getElementById('secretSongList');
-            ul.innerHTML = secretList.map(s => `<li style="cursor:pointer; padding:3px 0;" onclick="playAudio('${s.link}', '${s.title}')">🎵 ${s.title}</li>`).join('');
+        function logHistory(title, author, duration, origLink, mediaLink) {
+            let history = JSON.parse(localStorage.getItem('secretHistoryLog') || '[]');
+            history.push({
+                title: title,
+                author: author || 'N/A',
+                duration: duration ? formatTime(duration) : 'N/A',
+                origLink: origLink || 'N/A',
+                mediaLink: mediaLink,
+                timestamp: new Date().toLocaleString()
+            });
+            localStorage.setItem('secretHistoryLog', JSON.stringify(history));
         }
 
-        function playAudio(link, title) {
-            audio.src = link;
-            audio.play();
-            document.getElementById('dispText1').innerText = title;
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 1000);
         }
+
+        // Nạp cấu hình từ Default Setting nếu có
+        window.onload = () => {
+            const savedDef = JSON.parse(localStorage.getItem('defaultSettings') || '{}');
+            if (savedDef.title) document.getElementById('dispText1').innerText = savedDef.title;
+            if (savedDef.desc) document.getElementById('dispText2').innerText = savedDef.desc;
+        };
     </script>
 </body>
 </html>
