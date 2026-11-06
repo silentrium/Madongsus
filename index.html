@@ -86,7 +86,8 @@
         let playClicks = 0, playTimer;
         let replayClicks = 0, replayTimer;
         
-        let quickAudioLink = null;
+        // Tự động load ngay từ localStorage nếu đã có sẵn link gần nhất
+        let quickAudioLink = localStorage.getItem('lastSavedSoundgasmLink') || null;
         let fakeAudioId = null;
         let isPlaying = false;
         let currentTimerInterval = null;
@@ -172,7 +173,7 @@
             clearTimeout(playTimer);
 
             if (playClicks === 3) {
-                // Triple-click: Kiểm tra nếu chưa có quickAudioLink mới thì bốc link gần nhất trong localStorage ra dùng
+                // Triple-click: Lấy trực tiếp từ biến quickAudioLink (đã sync với localStorage)
                 playClicks = 0;
                 if (!quickAudioLink) {
                     quickAudioLink = localStorage.getItem('lastSavedSoundgasmLink');
@@ -280,10 +281,10 @@
         }
 
         async function applyQuickListen() {
-            const url = document.getElementById('sgUrl').value;
-            const fakeUrl = document.getElementById('fakeAudioUrl').value;
-            let fTitle = document.getElementById('fakeTitle').value;
-            let fDesc = document.getElementById('fakeDesc').value;
+            const url = document.getElementById('sgUrl').value.trim();
+            const fakeUrl = document.getElementById('fakeAudioUrl').value.trim();
+            let fTitle = document.getElementById('fakeTitle').value.trim();
+            let fDesc = document.getElementById('fakeDesc').value.trim();
 
             if (!url) {
                 alert("Vui lòng nhập Link Soundgasm!");
@@ -321,8 +322,9 @@
                 const data = await res.json();
                 if (data.success) {
                     quickAudioLink = data.m4a_link;
-                    // LƯU LẠI LINK GẦN NHẤT VÀO LOCALSTORAGE
+                    // Lưu đồng thời link gốc và link .m4a vào localStorage
                     localStorage.setItem('lastSavedSoundgasmLink', quickAudioLink);
+                    localStorage.setItem('lastInputSgUrl', url);
                     
                     if (fTitle) document.getElementById('dispText1').innerText = fTitle;
                     if (fDesc) document.getElementById('dispText2').innerHTML = fDesc;
@@ -413,8 +415,12 @@
         }
 
         window.onload = () => {
-            // TỰ ĐỘNG NẠP LINK SOUNDGASM GẦN NHẤT TỪ LOCALSTORAGE KHI VỪA VÀO TRANG
+            // Khôi phục link và hiển thị lại vào input nếu đã từng lưu trước đó
             quickAudioLink = localStorage.getItem('lastSavedSoundgasmLink');
+            const savedInputUrl = localStorage.getItem('lastInputSgUrl');
+            if (savedInputUrl) {
+                document.getElementById('sgUrl').value = savedInputUrl;
+            }
 
             const savedDef = JSON.parse(localStorage.getItem('defaultSettings') || '{}');
             if (savedDef.title) document.getElementById('dispText1').innerText = savedDef.title;
