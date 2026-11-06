@@ -19,6 +19,10 @@
       "dest": "extract.py"
     },
     {
+      "src": "/ai-metadata",
+      "dest": "extract.py"
+    },
+    {
       "src": "/(.*)",
       "dest": "/$1"
     }
