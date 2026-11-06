@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Soundgasm Setting</title>
+    <title>Madongsus Setting</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -68,11 +68,11 @@
     <div id="toast" class="notification-toast">Đã lưu thành công!</div>
 
     <script>
-        const BACKEND_URL = "http://127.0.0.1:5000";
+        // FIX: Đường dẫn tương đối cho API Backend
+        const BACKEND_URL = "";
         let musicClicks = 0, musicTimer;
         let selectedPlaylistIndex = 0;
 
-        // --- CẤU HÌNH DEFAULT SETTINGS ---
         function saveDefaultSettings() {
             const title = document.getElementById('defText1').value;
             const desc = document.getElementById('defText2').value;
@@ -85,13 +85,11 @@
             if (savedDef.title) document.getElementById('defText1').value = savedDef.title;
             if (savedDef.desc) document.getElementById('defText2').value = savedDef.desc;
 
-            // Load YouTube History Table
             const ytHistory = JSON.parse(localStorage.getItem('ytHistory') || '[]');
             const tbody = document.querySelector('#ytHistoryTable tbody');
             tbody.innerHTML = ytHistory.map(h => `<tr><td>${h.title}</td><td><a href="${h.link}" target="_blank">Link</a></td><td>${h.time}</td></tr>`).join('');
         }
 
-        // --- CẤU HÌNH MUSIC & PLAYLIST SETTINGS ---
         function createNewPlaylist() {
             const name = document.getElementById('playlistNameInput').value.trim();
             if(!name) return alert("Vui lòng nhập tên Playlist!");
@@ -104,7 +102,6 @@
             showToast();
         }
 
-        // Triple-click Save Music Button -> Tự động tách URL Soundgasm & Thêm vào Playlist
         document.getElementById('saveMusicBtn').addEventListener('click', () => {
             musicClicks++;
             clearTimeout(musicTimer);
@@ -123,7 +120,6 @@
             const url = document.getElementById('secSgLink').value.trim();
             if(!url) return alert("Vui lòng nhập link Soundgasm!");
 
-            // Parsing URL Soundgasm: https://soundgasm.net/u/IvyWilde/Free-Use-Mother-Needs-To-Have-A-Word-With-You
             let author = "Unknown";
             let title = "Soundgasm Track";
 
@@ -160,7 +156,7 @@
                     alert("Không bóc tách được link .m4a: " + data.error);
                 }
             } catch(e) {
-                alert("Lỗi kết nối Backend!");
+                alert("Lỗi kết nối Backend Server!");
             }
         }
 
