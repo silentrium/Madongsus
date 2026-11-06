@@ -18,7 +18,7 @@
     </nav>
 
     <div class="setting-container">
-        <!-- BOX 1: DEFAULT SETTING -->
+        <!-- BOX 1: DEFAULT SETTING & YOUTUBE HISTORY -->
         <div class="setting-box">
             <h3>Default Setting</h3>
             <label>Text 1 (Default Title):</label><br>
@@ -27,23 +27,24 @@
             <label>Text 2 (Default Description):</label><br>
             <textarea id="defText2" style="width:90%; height:50px;"></textarea><br><br>
 
-            <label>Default YouTube / Fake Audio Link:</label><br>
+            <label>Default YouTube Link:</label><br>
             <input type="text" id="defYoutubeUrl" placeholder="https://www.youtube.com/watch?v=..." style="width:90%;"><br><br>
 
             <button class="btn-ctrl" id="saveDefBtn" onclick="saveDefaultSettings()">Save Default</button>
+            <button class="btn-ctrl" onclick="restoreLatestSettings()" style="background:#e0e0e0;">Restore Latest</button>
 
-            <h4>YouTube / Normal History Log</h4>
-            <div class="playlist-scroll" style="height:100px;">
+            <h4>YouTube / Normal History Log (Mới nhất lên trên)</h4>
+            <div class="playlist-scroll" style="height:120px;">
                 <table class="history-table" id="ytHistoryTable">
                     <thead>
-                        <tr><th>Title</th><th>Link</th><th>Time</th></tr>
+                        <tr><th>Title</th><th>YouTube Link</th><th>Time (Play)</th></tr>
                     </thead>
                     <tbody></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- BOX 2: MUSIC & PLAYLIST SETTING -->
+        <!-- BOX 2: MUSIC & SECRET PLAYLIST & SECRET HISTORY -->
         <div class="setting-box">
             <h3>Music & Secret Playlist Setting</h3>
             <label>Tên Playlist mới / Chọn Playlist:</label><br>
@@ -58,11 +59,11 @@
             <h4>Danh sách Tracks trong Playlist đã chọn:</h4>
             <div class="playlist-scroll" id="settingTrackList"></div>
             
-            <h4>Secret Audio History Log (.txt Format)</h4>
-            <div class="playlist-scroll" style="height:90px;">
+            <h4>Secret Audio History Log (Mới nhất lên trên)</h4>
+            <div class="playlist-scroll" style="height:110px;">
                 <table class="history-table" id="secretHistoryTable">
                     <thead>
-                        <tr><th>Title</th><th>Author</th><th>Time</th><th>Media Link</th></tr>
+                        <tr><th>Title</th><th>Author</th><th>Time (Play)</th><th>Media Link</th></tr>
                     </thead>
                     <tbody></tbody>
                 </table>
@@ -70,31 +71,49 @@
         </div>
     </div>
 
-    <div id="toast" class="notification-toast">Đã lưu thành công!</div>
+    <div id="toast" class="notification-toast">Thành công!</div>
 
     <script>
         const BACKEND_URL = "";
         let musicClicks = 0, musicTimer;
         let selectedPlaylistIndex = 0;
 
+        const defaultInitialState = {
+            title: "We Don't Talk Anymore",
+            desc: "<b>Artist:</b> Charlie Puth ft. Selena Gomez<br><b>Duration:</b> 03:37<br><b>Lyrics:</b><br>We don't talk anymore, like we used to do...",
+            ytUrl: "https://www.youtube.com/watch?v=3AtDnEC4zak"
+        };
+
         function saveDefaultSettings() {
             const title = document.getElementById('defText1').value;
             const desc = document.getElementById('defText2').value;
             const ytUrl = document.getElementById('defYoutubeUrl').value.trim();
 
-            localStorage.setItem('defaultSettings', JSON.stringify({title, desc, ytUrl}));
+            const settingsData = {title, desc, ytUrl};
+            localStorage.setItem('defaultSettings', JSON.stringify(settingsData));
+            localStorage.setItem('latestBackupSettings', JSON.stringify(settingsData));
+            showToast();
+        }
+
+        function restoreLatestSettings() {
+            const latest = JSON.parse(localStorage.getItem('latestBackupSettings') || JSON.stringify(defaultInitialState));
+            document.getElementById('defText1').value = latest.title;
+            document.getElementById('defText2').value = latest.desc;
+            document.getElementById('defYoutubeUrl').value = latest.ytUrl;
+            localStorage.setItem('defaultSettings', JSON.stringify(latest));
             showToast();
         }
 
         function loadDefaultSettingsUI() {
-            const savedDef = JSON.parse(localStorage.getItem('defaultSettings') || '{}');
-            if (savedDef.title) document.getElementById('defText1').value = savedDef.title;
-            if (savedDef.desc) document.getElementById('defText2').value = savedDef.desc;
-            if (savedDef.ytUrl) document.getElementById('defYoutubeUrl').value = savedDef.ytUrl;
+            const savedDef = JSON.parse(localStorage.getItem('defaultSettings') || JSON.stringify(defaultInitialState));
+            document.getElementById('defText1').value = savedDef.title || defaultInitialState.title;
+            document.getElementById('defText2').value = savedDef.desc || defaultInitialState.desc;
+            document.getElementById('defYoutubeUrl').value = savedDef.ytUrl || defaultInitialState.ytUrl;
 
+            // Nạp bảng YouTube History (Mới nhất nằm trên cùng)
             const ytHistory = JSON.parse(localStorage.getItem('ytHistory') || '[]');
             const tbody = document.querySelector('#ytHistoryTable tbody');
-            tbody.innerHTML = ytHistory.map(h => `<tr><td>${h.title}</td><td><a href="${h.link}" target="_blank">Link</a></td><td>${h.time}</td></tr>`).join('');
+            tbody.innerHTML = ytHistory.map(h => `<tr><td>${h.title}</td><td><a href="${h.link}" target="_blank">${h.link}</a></td><td>${h.time}</td></tr>`).join('');
         }
 
         function createNewPlaylist() {
