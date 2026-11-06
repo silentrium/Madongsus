@@ -46,7 +46,11 @@ def ai_metadata():
             messages=[
                 {
                     "role": "user",
-                    "content": f"Hãy viết thông tin mô tả cho link audio/video này: {url}. Trả về đúng định dạng HTML gồm Artist, Duration, và một vài dòng Lyrics/Description mẫu bằng thẻ <b>, <br>.",
+                    "content": f"Hãy viết thông tin mô tả cho link audio/video này: {url}. Với định dạng mẫu là
+                    Artist: [Tên artist]
+                    Duration: [Link youtube này có thời lượng là bao nhiêu]
+                    Lyrics: [Một vài dòng lyrics đầu]
+                    Trả về đúng định dạng HTML gồm Artist, Duration, và một vài dòng Lyrics mẫu bằng thẻ <b>, <br>.",
                 }
             ],
             model="llama-3.3-70b-versatile",
