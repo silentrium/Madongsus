@@ -18,14 +18,23 @@
     </nav>
 
     <div class="setting-container">
-        <!-- BOX 1: DEFAULT SETTING & YOUTUBE HISTORY -->
+        <!-- BOX 1: DEFAULT SETTING & HTML REFERENCE BOX -->
         <div class="setting-box">
             <h3>Default Setting</h3>
             <label>Text 1 (Default Title):</label><br>
             <input type="text" id="defText1" style="width:90%;"><br><br>
             
             <label>Text 2 (Default Description):</label><br>
-            <textarea id="defText2" style="width:90%; height:50px;"></textarea><br><br>
+            <textarea id="defText2" style="width:90%; height:50px;"></textarea><br>
+
+            <!-- HTML REFERENCE BOX ĐỂ DỄ DÙNG -->
+            <div style="font-size:11px; background:#f4f4f4; border:1px solid #ddd; padding:6px; margin:5px 0 10px 0; border-radius:3px; width:90%;">
+                <b>HTML Quick Reference:</b><br>
+                <code>&lt;b&gt;In đậm&lt;/b&gt;</code> | 
+                <code>&lt;i&gt;In nghiêng&lt;/i&gt;</code> | 
+                <code>&lt;br&gt;Xuống dòng</code> | 
+                <code>&lt;u&gt;Gạch chân&lt;/u&gt;</code>
+            </div>
 
             <label>Default YouTube Link:</label><br>
             <input type="text" id="defYoutubeUrl" placeholder="https://www.youtube.com/watch?v=..." style="width:90%;"><br><br>
@@ -110,7 +119,6 @@
             document.getElementById('defText2').value = savedDef.desc || defaultInitialState.desc;
             document.getElementById('defYoutubeUrl').value = savedDef.ytUrl || defaultInitialState.ytUrl;
 
-            // Nạp bảng YouTube History (Mới nhất nằm trên cùng)
             const ytHistory = JSON.parse(localStorage.getItem('ytHistory') || '[]');
             const tbody = document.querySelector('#ytHistoryTable tbody');
             tbody.innerHTML = ytHistory.map(h => `<tr><td>${h.title}</td><td><a href="${h.link}" target="_blank">${h.link}</a></td><td>${h.time}</td></tr>`).join('');
