@@ -59,7 +59,11 @@
             <button class="btn-ctrl" onclick="saveDefaultSettings()">Save Default</button>
             <button class="btn-ctrl" onclick="restoreLatestSettings()" style="background:#e0e0e0;">Restore Latest</button>
 
-            <h4>YouTube History Log</h4>
+            <!-- YOUTUBE HISTORY LOG CÓ NÚT CLEAR -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 5px;">
+                <h4 style="margin: 0;">YouTube History Log</h4>
+                <button class="btn-ctrl" onclick="clearYoutubeHistory()" style="background: #ff4d4f; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">Clear History</button>
+            </div>
             <div class="playlist-scroll" style="height:120px;">
                 <table class="history-table" id="ytHistoryTable">
                     <thead>
@@ -91,7 +95,7 @@
             <br>
             <button class="btn-ctrl" onclick="saveNormalPlaylist()">Save Playlist</button>
 
-            <!-- MECHANIC ẨN MỞ SECRET SETTING (CLICK 3 LẦN BÀO VÙNG TRỐNG) -->
+            <!-- MECHANIC ẨN MỞ SECRET SETTING (CLICK 3 LẦN VÀO VÙNG TRỐNG) -->
             <div class="secret-trigger-area" id="secretTriggerBox" title="Click 3 lần liên tiếp để mở Secret Box"></div>
 
             <!-- SECRET PLAYLIST SETTING CONTAINER -->
@@ -114,7 +118,11 @@
                 <br>
                 <button class="btn-ctrl" onclick="saveSecretPlaylist()">Save Secret Playlist</button>
 
-                <h4 style="margin-top: 20px;">Soundgasm History Log (Mới nhất lên trên)</h4>
+                <!-- SOUNDGASM HISTORY LOG CÓ NÚT CLEAR -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 5px;">
+                    <h4 style="margin: 0; color: #b78103;">Soundgasm History Log (Mới nhất lên trên)</h4>
+                    <button class="btn-ctrl" onclick="clearSecretHistory()" style="background: #ff4d4f; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">Clear History</button>
+                </div>
                 <div class="playlist-scroll" style="height: 140px;">
                     <table class="history-table" id="secretHistoryTable">
                         <thead>
@@ -167,8 +175,20 @@
             document.getElementById('defText2').value = savedDef.desc;
             document.getElementById('defYoutubeUrl').value = savedDef.ytUrl;
 
+            renderYoutubeHistory();
+        }
+
+        function renderYoutubeHistory() {
             const ytHistory = JSON.parse(localStorage.getItem('ytHistory') || '[]');
             document.querySelector('#ytHistoryTable tbody').innerHTML = ytHistory.map(h => `<tr><td>${h.title}</td><td><a href="${h.link}" target="_blank">${h.link}</a></td><td>${h.time}</td></tr>`).join('');
+        }
+
+        function clearYoutubeHistory() {
+            if (confirm("Bro có chắc muốn xóa sạch YouTube History Log không?")) {
+                localStorage.removeItem('ytHistory');
+                renderYoutubeHistory();
+                showToast("Đã xóa YouTube History Log!");
+            }
         }
 
         // --- NORMAL PLAYLIST ---
@@ -337,6 +357,14 @@
             `).join('');
         }
 
+        function clearSecretHistory() {
+            if (confirm("Bro có chắc muốn xóa sạch Soundgasm History Log không?")) {
+                localStorage.removeItem('secretHistoryLog');
+                loadSecretHistoryUI();
+                showToast("Đã xóa Soundgasm History Log!");
+            }
+        }
+
         function showToast(msg) {
             const toast = document.getElementById('toast');
             toast.innerText = msg;
@@ -349,6 +377,7 @@
             renderNormalTracks();
             renderSecretTracks();
         };
+
         let logoClicks = 0, logoTimer = null;
         document.getElementById('secretWelcomeLogo').addEventListener('click', () => {
             logoClicks++;
