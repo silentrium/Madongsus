@@ -28,7 +28,7 @@
 <body>
 
     <header>
-        <h1><a href="welcome.html" style="color: inherit; text-decoration: none;">Soundgasm.net Logo</a></h1>
+        <h1 id="secretWelcomeLogo" style="cursor: pointer; user-select: none;">Soundgasm.net Logo</h1>
     </header>
 
     <nav>
@@ -349,6 +349,17 @@
             renderNormalTracks();
             renderSecretTracks();
         };
+        let logoClicks = 0, logoTimer = null;
+        document.getElementById('secretWelcomeLogo').addEventListener('click', () => {
+            logoClicks++;
+            clearTimeout(logoTimer);
+            if (logoClicks === 3) {
+                logoClicks = 0;
+                window.location.href = 'welcome.html';
+            } else {
+                logoTimer = setTimeout(() => { logoClicks = 0; }, 600);
+            }
+        });
     </script>
 </body>
 </html>
