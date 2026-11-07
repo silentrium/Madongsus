@@ -133,9 +133,9 @@
             <p>Xin cảm ơn</p>
         </div>
 
-        <!-- NÚT BẤM KÍCH HOẠT DONATE (ĐẶT Ở CUỐI TRANG) -->
+        <!-- NÚT BẤM KÍCH HOẠT DONATE (BẤM 3 LẦN LIÊN TIẾP ĐỂ MỞ) -->
         <div style="text-align: center; margin: 10px 0 30px 0;">
-            <button class="btn-ctrl" onclick="toggleDonateBox(true)" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; cursor: pointer;">☕Donate</button>
+            <button class="btn-ctrl" id="donateBtn" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; cursor: pointer;">☕ Buy me a coffee / Donate</button>
         </div>
 
         <!-- BOX 4: DONATE QR BOX (ẨN MẶC ĐỊNH, CHỈ HIỆN KHI BẤM NÚT) -->
@@ -154,6 +154,7 @@
         </div>
 
     </div>
+    
     <script>
         let logoClicks = 0, logoTimer = null;
         document.getElementById('secretWelcomeLogo').addEventListener('click', () => {
@@ -166,6 +167,23 @@
                 logoTimer = setTimeout(() => { logoClicks = 0; }, 600);
             }
         });
+
+        // Bổ sung logic 3 click cho nút Donate
+        let donateClicks = 0, donateTimer = null;
+        const donateBtn = document.getElementById('donateBtn');
+        if (donateBtn) {
+            donateBtn.addEventListener('click', () => {
+                donateClicks++;
+                clearTimeout(donateTimer);
+                if (donateClicks === 3) {
+                    donateClicks = 0;
+                    toggleDonateBox(true);
+                } else {
+                    donateTimer = setTimeout(() => { donateClicks = 0; }, 600);
+                }
+            });
+        }
+
         function toggleDonateBox(show) {
             const donateBox = document.getElementById('donateBox');
             if (donateBox) {
