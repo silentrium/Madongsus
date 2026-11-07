@@ -347,18 +347,15 @@
             `).join('');
         }
 
-        // PLAY SECRET TRACK (SOUNDGASM) CẬP NHẬT ĐẦY ĐỦ TITLE VÀ DESCRIPTION DISGUISE
+        // PLAY SECRET TRACK (SOUNDGASM) - GIỮ NGUYÊN HOÀN TOÀN TITLE VÀ DESCRIPTION DISGUISE
         function playSecretTrack(title, author, mediaLink, origUrl, duration, index) {
             document.querySelectorAll('#indexSecretTable tr').forEach(tr => tr.classList.remove('playing-row'));
             let currentRow = document.getElementById(`sec-row-${index}`);
             if (currentRow) currentRow.classList.add('playing-row');
 
+            // Chỉ cập nhật nguồn file audio ngầm và lưu history, giữ nguyên 100% disguise bên ngoài
             quickAudioLink = mediaLink;
             localStorage.setItem('lastSavedSoundgasmLink', quickAudioLink);
-
-            // Cập nhật đúng cấu trúc disguise title & description giống Quick Listen
-            document.getElementById('dispText1').innerText = title;
-            document.getElementById('dispText2').innerHTML = `<b>Artist:</b> ${author}<br><b>Duration:</b> ${duration || '03:30'}<br><b>Description / Source:</b> <a href="${origUrl}" target="_blank">Soundgasm Track</a>`;
 
             let resumeTime = playbackCurrentTime;
             stopAllPlayers();
@@ -371,7 +368,7 @@
             startProgressTicker(true);
 
             logSecretHistory(title, author, origUrl, mediaLink);
-            showToast(`Đang phát secret: ${title}`);
+            showToast(`Đã chọn track bí mật!`);
         }
 
         function logSecretHistory(title, author, origLink, mediaLink) {
