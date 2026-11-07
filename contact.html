@@ -121,13 +121,36 @@
                 <br>
                 <p>Chúc bạn may mắn và có thời gian sử dụng trang web <a href="https://madongsus-ten.vercel.app"><u><span style="color: #2263a4;">Madongsus</span></u></a> thật thú vị và thoải mái</p>
             </div>
+        </div>
 
-            <div class="contact-box">
-                <p>Để tìm hiểu thêm thông tin, bạn có thể truy cập vào <a href="https://google.com" target="_blank" rel="noopener noreferrer"><u>Trang chủ Google</u></a> để tìm kiếm trực tuyến.</p>
-                <p>Để liên hệ với người tạo, hãy kéo lên đầu trang để xem thông tin liên hệ</p>
-                <p>Xin cảm ơn</p>
+        <!-- BOX 3: ĐÔI LỜI NHẮN GỬI -->
+        <div class="contact-box">
+            <p>Để tìm hiểu thêm thông tin, bạn có thể truy cập vào <a href="https://google.com" target="_blank" rel="noopener noreferrer"><u>Trang chủ Google</u></a> để tìm kiếm trực tuyến.</p>
+            <p>Để liên hệ với người tạo trang web này, hãy kéo lên đầu trang để xem thông tin liên hệ</p>
+            <ul>
+                <li>Lưu ý: Khi liên hệ cần trình bày rõ danh tính, lí do liên hệ và cử xử với một thái độ tôn trọng</li>
+            </ul>
+            <p>Xin cảm ơn</p>
+        </div>
+
+        <!-- NÚT BẤM KÍCH HOẠT DONATE (ĐẶT Ở CUỐI TRANG) -->
+        <div style="text-align: center; margin: 10px 0 30px 0;">
+            <button class="btn-ctrl" onclick="toggleDonateBox(true)" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; cursor: pointer;">☕Donate</button>
+        </div>
+
+        <!-- BOX 4: DONATE QR BOX (ẨN MẶC ĐỊNH, CHỈ HIỆN KHI BẤM NÚT) -->
+        <div class="setting-box" id="donateBox" style="width: 100%; text-align: center; display: none; background: #fffdfa; border: 1px dashed #cbd5e1;">
+            <h3 style="color: #e11d48; margin-bottom: 10px;">☕ Support & Donate</h3>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 15px;">Nếu app này hữu ích với mọi người, hãy hảo tâm ủng hộ một ly cà phê nha!</p>
+            
+            <div style="display: inline-block; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                <!-- Thay link ảnh QR của bro vào thuộc tính src bên dưới -->
+                <img src="https://drive.google.com/file/d/1TkFWb-g26OSDZesjs0gk3WOFbXBoyTbj/view?.png" alt="Donate QR Code" style="width: 180px; height: 180px; object-fit: contain; display: block; border-radius: 8px;">
             </div>
-
+            
+            <p style="font-size: 13px; color: #94a3b8; margin-top: 12px; font-style: italic;">Cảm ơn sự ủng hộ của bạn rất nhiều! ❤️</p>
+            <br><br>
+            <button class="btn-ctrl" onclick="toggleDonateBox(false)" style="background: #ccc; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer;">Close</button>
         </div>
 
     </div>
