@@ -60,7 +60,7 @@
             <button class="btn-ctrl" onclick="document.getElementById('secretInlineBox').style.display='none'">Close</button>
         </div>
 
-        <!-- YOUTUBE PLAYLIST BOX (Bấm 1 lần nút Playlist - Không có search bar) -->
+        <!-- YOUTUBE PLAYLIST BOX -->
         <div id="normalPlaylistContainer" class="inline-extension" style="display:none;">
             <h4 style="margin-top:0;">YouTube Playlist</h4>
             <div class="playlist-scroll">
@@ -75,7 +75,7 @@
             <button class="btn-ctrl" onclick="document.getElementById('normalPlaylistContainer').style.display='none'">Close</button>
         </div>
 
-        <!-- SECRET SOUNDGASM PLAYLIST BOX (Bấm 3 lần nút Playlist - Không có search bar) -->
+        <!-- SECRET SOUNDGASM PLAYLIST BOX -->
         <div id="secretPlaylistContainer" class="inline-extension" style="background: #fff8e6; border-color: #ffe0b2; display:none;">
             <h4 style="margin-top:0; color: #b78103;">Secret Soundgasm Playlist</h4>
             <div class="playlist-scroll">
@@ -294,15 +294,34 @@
             `).join('');
         }
 
-        function playNormalTrack(title, link, index) {
+        // PLAY NORMAL TRACK (YOUTUBE) KẾT HỢP GROQ AI GENERATE DESCRIPTION
+        async function playNormalTrack(title, link, index) {
             document.querySelectorAll('#indexNormalTable tr').forEach(tr => tr.classList.remove('playing-row'));
             let currentRow = document.getElementById(`norm-row-${index}`);
             if (currentRow) currentRow.classList.add('playing-row');
 
             let ytId = extractYouTubeId(link);
             if (ytId) fakeAudioId = ytId;
+
             document.getElementById('dispText1').innerText = title;
-            document.getElementById('dispText2').innerHTML = `<b>YouTube:</b> <a href="${link}" target="_blank">${link}</a>`;
+            document.getElementById('dispText2').innerHTML = "<b>Đang tải mô tả từ AI...</b>";
+
+            try {
+                const aiRes = await fetch(`${BACKEND_URL}/ai-metadata`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url: link})
+                });
+                const aiData = await aiRes.json();
+                if (aiData.success) {
+                    document.getElementById('dispText2').innerHTML = aiData.desc;
+                } else {
+                    document.getElementById('dispText2').innerHTML = `<b>YouTube Link:</b> <a href="${link}" target="_blank">${link}</a>`;
+                }
+            } catch(e) {
+                document.getElementById('dispText2').innerHTML = `<b>YouTube Link:</b> <a href="${link}" target="_blank">${link}</a>`;
+            }
+
             stopAllPlayers();
             activeSourceType = 'youtube';
             playYouTubeAudio(fakeAudioId, 0);
@@ -323,28 +342,34 @@
                     <td>${t.duration}</td>
                     <td><a href="${t.originalUrl}" target="_blank">Link</a></td>
                     <td><a href="${t.mediaLink}" target="_blank">.m4a</a></td>
-                    <td><button class="btn-ctrl" onclick="playSecretTrack('${t.title}', '${t.author}', '${t.mediaLink}', '${t.originalUrl}', ${i})">Play Imd</button></td>
+                    <td><button class="btn-ctrl" onclick="playSecretTrack('${t.title}', '${t.author}', '${t.mediaLink}', '${t.originalUrl}', '${t.duration}', ${i})">Play Imd</button></td>
                 </tr>
             `).join('');
         }
 
-        function playSecretTrack(title, author, mediaLink, origUrl, index) {
+        // PLAY SECRET TRACK (SOUNDGASM) CẬP NHẬT ĐẦY ĐỦ TITLE VÀ DESCRIPTION DISGUISE
+        function playSecretTrack(title, author, mediaLink, origUrl, duration, index) {
             document.querySelectorAll('#indexSecretTable tr').forEach(tr => tr.classList.remove('playing-row'));
             let currentRow = document.getElementById(`sec-row-${index}`);
             if (currentRow) currentRow.classList.add('playing-row');
 
             quickAudioLink = mediaLink;
             localStorage.setItem('lastSavedSoundgasmLink', quickAudioLink);
+
+            // Cập nhật đúng cấu trúc disguise title & description giống Quick Listen
             document.getElementById('dispText1').innerText = title;
-            document.getElementById('dispText2').innerHTML = `<b>Author:</b> ${author}`;
+            document.getElementById('dispText2').innerHTML = `<b>Artist:</b> ${author}<br><b>Duration:</b> ${duration || '03:30'}<br><b>Description / Source:</b> <a href="${origUrl}" target="_blank">Soundgasm Track</a>`;
+
+            let resumeTime = playbackCurrentTime;
             stopAllPlayers();
             activeSourceType = 'soundgasm';
             audio.src = quickAudioLink;
-            audio.currentTime = 0;
+            audio.currentTime = resumeTime;
             audio.play();
             playBtn.innerText = "⏸";
             isPlaying = true;
             startProgressTicker(true);
+
             logSecretHistory(title, author, origUrl, mediaLink);
             showToast(`Đang phát secret: ${title}`);
         }
