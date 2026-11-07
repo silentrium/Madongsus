@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Soundgasm.net - Contact & Guide</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* CSS riêng cho trang contact để trình bày các box gọn gàng */
+        .contact-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+        .contact-box {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .contact-box h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            color: #333;
+        }
+        .code-snippet {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 13px;
+            word-break: break-all;
+            white-space: pre-wrap;
+            user-select: all;
+            margin: 10px 0;
+            color: #d63384;
+        }
+        .guide-steps {
+            line-height: 1.6;
+            font-size: 14px;
+            color: #444;
+        }
+        .guide-steps ol {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Soundgasm.net Logo - Contact & Guide</h1>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="contact.html">Contact</a>
+        <a href="setting.html">Setting</a>
+    </nav>
+
+    <div class="contact-container">
+        
+        <!-- BOX 1: THÔNG TIN LIÊN LẠC (BỎ TRỐNG ĐỂ TỰ ĐIỀN SAU) -->
+        <div class="contact-box">
+            <h3>Thông tin liên lạc</h3>
+            <p style="color: #666; font-style: italic;">[Khu vực này đang để trống, bro có thể tự chỉnh sửa trực tiếp nội dung trong file HTML sau]</p>
+            
+            <div style="margin-top: 15px;">
+                <p><b>Email:</b> <!-- Điền email vào đây --></p>
+                <p><b>Telegram / Social:</b> <!-- Điền thông tin vào đây --></p>
+                <p><b>Ghi chú:</b> <!-- Điền ghi chú vào đây --></p>
+            </div>
+        </div>
+
+        <!-- BOX 2: HƯỚNG DẪN LẤY LINK .M4A TRỰC TIẾP QUA BOOKMARKLET -->
+        <div class="contact-box">
+            <h3>Hướng dẫn lấy link .m4a trực tiếp trên Soundgasm</h3>
+            <div class="guide-steps">
+                <p>Đoạn mã Bookmarklet dưới đây giúp bạn nhanh chóng trích xuất trực tiếp đường dẫn file âm thanh <code>.m4a</code> ngay khi đang lướt trang Soundgasm:</p>
+                
+                <ol>
+                    <li>Tạo một Bookmark (Dấu trang) bất kỳ trên trình duyệt của bạn (ví dụ đặt tên là: <i>Get .m4a</i>).</li>
+                    <li>Copy đoạn mã JavaScript bên dưới và dán vào phần URL / Địa chỉ của Bookmark vừa tạo:</li>
+                </ol>
+
+                <!-- Đoạn mã Bookmarklet Javascript -->
+                <div class="code-snippet">javascript:(function(){var m=document.documentElement.innerHTML.match(/https:\/\/media\.soundgasm\.net\/sounds\/[a-zA-Z0-9]+\.m4a/);if(m){prompt("Link .m4a trực tiếp của bạn:",m[0]);window.open(m[0],'_blank');}else{alert("Không tìm thấy link .m4a trên trang này!");}})();</div>
+
+                <ol start="3">
+                    <li>Khi bạn đang mở một trang bài hát trên Soundgasm, chỉ cần click vào Bookmark đó trên thanh Bookmarks Bar, một hộp thoại sẽ hiện ra chứa sẵn link <code>.m4a</code> để bạn copy hoặc tự động mở tab nghe trực tiếp!</li>
+                </ol>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
