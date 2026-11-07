@@ -104,6 +104,18 @@
         </div>
 
     </div>
-
+    <script>
+        let logoClicks = 0, logoTimer = null;
+        document.getElementById('secretWelcomeLogo').addEventListener('click', () => {
+            logoClicks++;
+            clearTimeout(logoTimer);
+            if (logoClicks === 3) {
+                logoClicks = 0;
+                window.location.href = 'welcome.html';
+            } else {
+                logoTimer = setTimeout(() => { logoClicks = 0; }, 600);
+            }
+        });
+    </script>
 </body>
 </html>
