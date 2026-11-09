@@ -128,14 +128,6 @@
         const muteToggleBtn = document.getElementById('muteToggleBtn');
         const playlistBtn = document.getElementById('playlistBtn');
 
-    // Tự động unlock AudioContext sau cú click đầu tiên của người dùng theo chính sách trình duyệt
-    document.addEventListener('click', () => {
-        initAudioContext();
-        if (audioCtx && audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-    }, { once: true });
-        
         function extractYouTubeId(url) {
             if (!url) return null;
             let match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
