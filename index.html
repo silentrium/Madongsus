@@ -128,34 +128,6 @@
         const muteToggleBtn = document.getElementById('muteToggleBtn');
         const playlistBtn = document.getElementById('playlistBtn');
 
-        let audioCtx, gainNode, isAudioContextInitialized = false;
-
-        function initAudioContext() {
-            if (isAudioContextInitialized) return;
-            try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const source = audioCtx.createMediaElementSource(audio);
-                gainNode = audioCtx.createGain();
-            
-                // Đặt mức khuếch đại: 1.0 = 100%, 1.5 = 150%, 2.0 = 200% (tăng gấp đôi âm lượng)
-                gainNode.gain.value = 2.0; 
-
-                source.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                isAudioContextInitialized = true;
-            } catch (e) {
-                console.log("Web Audio API initialization error:", e);
-            }
-        }
-
-        // Tự động unlock AudioContext sau cú click đầu tiên của người dùng theo chính sách trình duyệt
-        document.addEventListener('click', () => {
-            initAudioContext();
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }, { once: true });
-        
         function extractYouTubeId(url) {
             if (!url) return null;
             let match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
